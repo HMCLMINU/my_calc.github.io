@@ -111,14 +111,16 @@
         <div class="inline"><input type="number" id="income" inputmode="numeric" value="650"><span class="unit">만원 / 월</span></div>
       </label>
     </div>
-    <div class="result" id="incomeResult"></div>
     <div class="card">
-      <p class="note"><strong>공급은 단계 순서로 이뤄집니다.</strong> 단계마다 소득 상한이 달라요. 아래에서 우리 상황을 고르면 해당 단계가 켜집니다.</p>
-      <div class="stages" id="stages"></div>
-      <label class="field" style="margin-top:14px">
-        <span class="lab">우리 상황</span>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">어느 단계로 신청하나요? <span class="hint">단계마다 소득 상한이 다릅니다</span></span>
         <div class="stepper" id="mystage"></div>
       </label>
+    </div>
+    <div class="result" id="incomeResult"></div>
+    <div class="card">
+      <p class="note"><strong>공급은 단계 순서로 이뤄집니다.</strong> 위에서 고른 단계에 따라 아래 해당 항목이 켜집니다.</p>
+      <div class="stages" id="stages"></div>
     </div>
   </section>
 
@@ -304,7 +306,7 @@ const PARAMS = {
   const hhKeys=(PARAMS.income.hhKeys||Object.keys(PARAMS.income.base100).map(Number)).sort((a,b)=>a-b);
   const hhLabel = n => (PARAMS.income.hhLabel && PARAMS.income.hhLabel[n]) ? PARAMS.income.hhLabel[n] : (n+"인");
   $("hh").innerHTML = hhKeys.map((n,i)=>`<button data-v="${n}"${i===0?' aria-pressed="true"':''}>${hhLabel(n)}</button>`).join("");
-  $("mystage").innerHTML = PARAMS.stages.map(s=>`<button data-v="${s.id}">${s.name}</button>`).join("");
+  $("mystage").innerHTML = PARAMS.stages.map((s,i)=>`<button data-v="${s.id}"${i===0?' aria-pressed="true"':''}>${s.name}</button>`).join("");
   $("stages").innerHTML = PARAMS.stages.map(s=>
     `<div class="stage" data-s="${s.id}"><span class="dot" style="background:${s.color}"></span><b>${s.id}단계 ${s.name}</b> ${s.desc}<span class="pct">${s.pct}%</span></div>`).join("");
   $("scoretier").innerHTML = Object.keys(PARAMS.score).map((k,i)=>
@@ -315,7 +317,7 @@ const PARAMS = {
   $("cprice").value = PARAMS.price.default;
 
   // ===== TAB1 income =====
-  let hh=hhKeys[0], dual="single", myStage=null;
+  let hh=hhKeys[0], dual="single", myStage=(PARAMS.stages[0]?PARAMS.stages[0].id:1);
   stepper("hh",v=>{hh=+v;renderIncome();});
   stepper("dual",v=>{dual=v;renderIncome();});
   stepper("mystage",v=>{myStage=+v;renderIncome();});
