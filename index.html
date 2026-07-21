@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>청약 계산기 모음</title>
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --s1:#2f6d8f;--s2:#5a8fa8;--s3:#94b3c4;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:22px 0 18px;background:#ecebe4;padding:5px;border-radius:12px}
+  .tab{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:12.5px;padding:10px 4px;
+    border-radius:8px;color:var(--ink-soft);background:transparent;transition:all .18s ease}
+  .tab .n{display:block;font-size:9px;letter-spacing:.08em;opacity:.6;font-weight:800;margin-bottom:2px}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel[data-active="true"]{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  label.field{display:block;margin-bottom:16px}
+  label.field:last-child{margin-bottom:0}
+  .field .lab{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .stepper{display:flex;gap:8px;flex-wrap:wrap}
+  .stepper button{flex:1 1 44px;min-width:44px;cursor:pointer;border:1px solid var(--line);background:#fbfbf9;
+    border-radius:9px;font:inherit;font-weight:700;padding:9px 4px;color:var(--ink);transition:all .15s ease}
+  .stepper button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  input[type=number]{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  input:focus,.stepper button:focus-visible,.tab:focus-visible,select:focus{outline:2px solid var(--seal);outline-offset:1px}
+  select{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  .inline{display:flex;align-items:center;gap:8px}
+  .inline input{text-align:right}
+  .unit{color:var(--ink-soft);font-weight:700;font-size:13px;white-space:nowrap}
+  .result{border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid var(--line);background:var(--card)}
+  .result .eyebrow{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--ink-soft);text-transform:uppercase}
+  .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+  .big small{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .verdict{font-size:14px;font-weight:700}
+  .verdict.ok{color:var(--ok)}.verdict.warn{color:var(--warn)}.verdict.no{color:var(--seal)}
+  .bar{height:12px;border-radius:99px;background:#ececec;overflow:hidden;margin:12px 0 6px}
+  .bar>span{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+  .barscale{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);font-weight:700}
+  .stages{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .stage{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;opacity:.55;transition:all .2s ease}
+  .stage.hit{opacity:1;border-color:var(--ink);background:#fbfbf9}
+  .stage .dot{width:10px;height:10px;border-radius:99px;flex:none}
+  .stage b{font-weight:800}.stage .pct{margin-left:auto;font-weight:800;color:var(--ink-soft)}
+  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft);font-weight:600}.kv .v{font-weight:800}
+  .scorebreak{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+  .srow{display:flex;align-items:center;font-size:13px;gap:8px}
+  .srow .sk{color:var(--ink-soft);font-weight:600;flex:1}
+  .srow .sv{font-weight:800}
+  .srow .sbar{flex:none;width:78px;height:7px;border-radius:99px;background:#ececec;overflow:hidden}
+  .srow .sbar>span{display:block;height:100%;background:var(--gold)}
+  .note{font-size:12px;color:var(--ink-soft);line-height:1.55}
+  .note strong{color:var(--ink)}
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:#fbfaf6;border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+  .disclaimer b{color:var(--seal)}
+</style>
+
+<style>
+  .lead{color:var(--ink-soft);font-size:14px;margin:6px 0 0}
+  .cards{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+  a.calcard{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:transform .12s ease,box-shadow .12s ease}
+  a.calcard:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(22,35,58,.08),0 14px 34px rgba(22,35,58,.10)}
+  .calcard .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;padding:3px 9px;border-radius:99px;margin-bottom:10px}
+  .tag.sale{color:var(--seal);background:var(--seal-soft)}
+  .tag.rent{color:#2f6d8f;background:#e3eef4}
+  .calcard h2{font-size:18px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
+  .calcard .meta{color:var(--ink-soft);font-size:13px;margin:0 0 12px}
+  .calcard .facts{display:flex;flex-direction:column;gap:5px;font-size:13px;margin-bottom:14px}
+  .calcard .facts .row{display:flex;gap:8px}
+  .calcard .facts .k{color:var(--ink-soft);min-width:64px;font-weight:600}
+  .calcard .go{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:14px;color:var(--ink)}
+  .calcard .go .arrow{transition:transform .12s ease}
+  a.calcard:hover .go .arrow{transform:translateX(3px)}
+  .foot{margin-top:26px;font-size:12px;color:var(--ink-soft);line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate">🧮 청약 계산기 모음</span>
+    <h1>단지별 <span class="accent">소득·배점·대출</span><br>계산기</h1>
+    <p class="lead">공고별로 소득기준·배점·대출/임대 조건을 넣어 만든 계산기입니다. 단지를 골라 확인하세요.</p>
+  </header>
+
+  <div class="cards">
+
+    <a class="calcard" href="./nakseng/">
+      <span class="tag sale">공공분양 · 신혼희망타운</span>
+      <h2>e편한세상 분당 퍼스트빌리지</h2>
+      <p class="meta">경기 성남시 성남낙생 A-1블록 · 입주 2029.02(예정)</p>
+      <div class="facts">
+        <div class="row"><span class="k">소득</span><span>우선/일반 130%(맞벌이 140%), 추첨 최대 200%</span></div>
+        <div class="row"><span class="k">대출</span><span>수익공유형 모기지 연 1.3%, 최대 4억</span></div>
+        <div class="row"><span class="k">계산</span><span>소득 · 배점(9/12점) · 대출 · 현금흐름</span></div>
+      </div>
+      <span class="go">계산기 열기 <span class="arrow">→</span></span>
+    </a>
+
+    <a class="calcard" href="./gumto/">
+      <span class="tag rent">국민임대 · 장기공공임대</span>
+      <h2>성남금토 A-2블록 국민임대</h2>
+      <p class="meta">경기 성남시 성남금토지구 · 입주 2027.01(예정)</p>
+      <div class="facts">
+        <div class="row"><span class="k">소득</span><span>우선 50%↓ / 일반 70%↓ (가구·출산 가산)</span></div>
+        <div class="row"><span class="k">임대</span><span>보증금·월세 전환(이율 6%/3.5%)</span></div>
+        <div class="row"><span class="k">계산</span><span>소득자격 · 자산 · 배점 · 임대료</span></div>
+      </div>
+      <span class="go">계산기 열기 <span class="arrow">→</span></span>
+    </a>
+
+  </div>
+
+  <div class="foot">
+    각 계산기의 기준 수치는 해당 단지 LH 공고문 기준이며 참고용 추정치입니다.
+    정확한 금액·자격·일정은 LH 청약플러스(apply.lh.or.kr) 공고문에서 반드시 확인하세요.
+  </div>
+</div>
+</body>
+</html>
