@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>강변 스카이타워 청년안심주택 계산기</title>
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --s1:#2f6d8f;--s2:#5a8fa8;--s3:#94b3c4;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:22px 0 18px;background:#ecebe4;padding:5px;border-radius:12px}
+  .tab{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:12.5px;padding:10px 4px;
+    border-radius:8px;color:var(--ink-soft);background:transparent;transition:all .18s ease}
+  .tab .n{display:block;font-size:9px;letter-spacing:.08em;opacity:.6;font-weight:800;margin-bottom:2px}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel[data-active="true"]{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  label.field{display:block;margin-bottom:16px}
+  label.field:last-child{margin-bottom:0}
+  .field .lab{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .stepper{display:flex;gap:8px;flex-wrap:wrap}
+  .stepper button{flex:1 1 44px;min-width:44px;cursor:pointer;border:1px solid var(--line);background:#fbfbf9;
+    border-radius:9px;font:inherit;font-weight:700;padding:9px 4px;color:var(--ink);transition:all .15s ease}
+  .stepper button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  .stepper.col{flex-direction:column}
+  .stepper.col button{flex:none;text-align:left;padding:11px 13px;font-size:13px}
+  input[type=number]{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  input:focus,.stepper button:focus-visible,.tab:focus-visible,select:focus{outline:2px solid var(--seal);outline-offset:1px}
+  select{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  .inline{display:flex;align-items:center;gap:8px}
+  .inline input{text-align:right}
+  .unit{color:var(--ink-soft);font-weight:700;font-size:13px;white-space:nowrap}
+  .result{border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid var(--line);background:var(--card)}
+  .result .eyebrow{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--ink-soft);text-transform:uppercase}
+  .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+  .big small{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .verdict{font-size:14px;font-weight:700}
+  .verdict.ok{color:var(--ok)}.verdict.warn{color:var(--warn)}.verdict.no{color:var(--seal)}
+  .bar{height:12px;border-radius:99px;background:#ececec;overflow:hidden;margin:12px 0 6px}
+  .bar>span{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+  .barscale{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);font-weight:700}
+  .stages{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .stage{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;opacity:.5;transition:all .2s ease}
+  .stage.hit{opacity:1;border-color:var(--ink);background:#fbfbf9}
+  .stage .dot{width:10px;height:10px;border-radius:99px;flex:none}
+  .stage b{font-weight:800}.stage .pct{margin-left:auto;font-weight:800;color:var(--ink-soft)}
+  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px;gap:10px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft);font-weight:600}.kv .v{font-weight:800;text-align:right}
+  .kv.total{border-top:2px solid var(--ink);border-bottom:0;margin-top:4px;padding-top:12px}
+  .kv.total .v{color:var(--seal);font-size:16px}
+  .note{font-size:12px;color:var(--ink-soft);line-height:1.55}
+  .note strong{color:var(--ink)}
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:#fbfaf6;border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+  .disclaimer b{color:var(--seal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate" id="plateText">🏙 청년안심주택 계산기</span>
+    <h1>내 <span class="accent">소득·자산 자격</span>과<br>보증금·월 부담을 확인</h1>
+    <p class="sub" id="subText"></p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="income"><span class="n">1</span>소득자격</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="asset"><span class="n">2</span>자산·차량</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="rank"><span class="n">3</span>순위</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="rent"><span class="n">4</span>임대료</button>
+  </div>
+
+  <!-- TAB1 소득자격 -->
+  <section class="panel" data-tab="income" data-active="true">
+    <div class="card">
+      <label class="field">
+        <span class="lab">가구원수 <span class="hint">(해당 세대 = 등본상 직계존비속, 태아 포함 / 형제자매 제외)</span></span>
+        <div class="stepper" id="hh"></div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">해당 세대 월평균 소득 <span class="hint">(세전 합산 / 만원)</span></span>
+        <div class="inline"><input type="number" id="income" inputmode="numeric" value="350"><span class="unit">만원 / 월</span></div>
+      </label>
+    </div>
+    <div class="card">
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">어느 유형으로 신청하나요? <span class="hint">유형마다 소득 기준이 완전히 다릅니다</span></span>
+        <div class="stepper col" id="typePick">
+          <button data-v="ysp" aria-pressed="true">청년 특별공급 (18세대) — 소득 120%↓</button>
+          <button data-v="ygen">청년 일반공급 (20세대) — 소득요건 없음</button>
+          <button data-v="ngen">신혼부부 일반공급 (47세대) — 소득요건 없음</button>
+        </div>
+      </label>
+    </div>
+    <div class="result" id="incomeResult"></div>
+    <div class="card">
+      <p class="note" id="incomeNote"></p>
+      <p class="note" style="margin-top:10px"><strong>청년 특별공급 소득 산정 방식:</strong> 단독 세대주면 <strong>본인 소득만</strong>, 세대원이 있으면 <strong>해당 세대 전원</strong>의 소득 합계로 봅니다. 소득이 없으면 사실증명(신고사실없음) 제출 후 <strong>신청자 + 부모 3인 기준</strong>으로 합산합니다.</p>
+    </div>
+  </section>
+
+  <!-- TAB2 자산·차량 -->
+  <section class="panel" data-tab="asset" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">자산 가액 <span class="hint">(청년=본인 / 신혼부부=세대 총자산, 만원)</span></span>
+        <div class="inline"><input type="number" id="asset" inputmode="numeric" value="8000"><span class="unit">만원</span></div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">보유 자동차 가액 <span class="hint">(이륜차 포함 / 보험개발원·복지로 기준가액, 만원)</span></span>
+        <div class="inline"><input type="number" id="car" inputmode="numeric" value="0"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="result" id="assetResult"></div>
+    <div class="card">
+      <p class="note" id="assetNote"></p>
+      <p class="note" style="margin-top:10px"><strong>차량 기준은 두 층위입니다.</strong> ① <strong>자격 판단</strong>: 4,542만원 이하 (지분 소유 인정) ② <strong>단지 등록·운행</strong>: 4,542만원 이하 차량만 등록 가능하고, 이때는 <strong>지분이 아니라 차량 전체 가액</strong>으로 봅니다. 세대당 1대(이륜차 포함)만 등록됩니다.</p>
+    </div>
+  </section>
+
+  <!-- TAB3 순위 -->
+  <section class="panel" data-tab="rank" data-active="false">
+    <div class="card">
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">거주지(또는 직장·대학 소재지) <span class="hint">모집공고일 2026.07.28 기준</span></span>
+        <div class="stepper col" id="regionPick">
+          <button data-v="1" aria-pressed="true">서울 광진구</button>
+          <button data-v="2">서울시(광진구 외)</button>
+          <button data-v="3">그 외 지역</button>
+        </div>
+      </label>
+    </div>
+    <div class="result" id="rankResult"></div>
+    <div class="card">
+      <p class="note"><strong>선정 순서 —</strong> 특별공급: <strong>소득순위 → 지역순위 → 전산 추첨</strong>. 일반공급: <strong>소득·자산·지역 요건 없이 무작위 추첨</strong>만 적용됩니다. 이 공고에는 신혼희망타운·국민임대식 <strong>배점표가 없습니다</strong>(다득점순 선정 아님).</p>
+      <p class="note" style="margin-top:10px"><strong>예비입주자 —</strong> 신청유형별 청약자가 공급세대수를 넘으면 모집호수의 <strong>20배수(2,000%)</strong>를 예비자로 뽑고, 예비순번은 무작위 추첨입니다. 예비자 유효기간은 <strong>6개월</strong>. 즉 19형 일반공급(20세대)이면 예비 400번까지 나옵니다.</p>
+    </div>
+  </section>
+
+  <!-- TAB4 임대료 -->
+  <section class="panel" data-tab="rent" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">주택형 <span class="hint">1인 1타입만 청약 가능 (중복 신청 시 전부 탈락)</span></span>
+        <div class="stepper col" id="unit"></div>
+      </label>
+      <label class="field">
+        <span class="lab">보증금 비율 <span class="hint">40 / 50 / 60% 단위 전환. 계약 후 변경 불가</span></span>
+        <div class="stepper" id="ratio">
+          <button data-v="40" aria-pressed="true">40%</button>
+          <button data-v="50">50%</button>
+          <button data-v="60">60%</button>
+        </div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">주차 등록 <span class="hint">주차 면수 부족 시 등록·운행이 불가할 수 있음</span></span>
+        <div class="stepper" id="park">
+          <button data-v="0" aria-pressed="true">안 함</button>
+          <button data-v="70000">입주자 일반</button>
+          <button data-v="20000">장애인·국가유공자</button>
+        </div>
+      </label>
+    </div>
+    <div class="result" id="rentResult"></div>
+    <div class="card">
+      <div class="kv"><span class="k">임대보증금</span><span class="v" id="rDeposit">—</span></div>
+      <div class="kv"><span class="k">계약금 (보증금의 10%)</span><span class="v" id="rDown">—</span></div>
+      <div class="kv"><span class="k">잔금 (실입주일까지)</span><span class="v" id="rBalance">—</span></div>
+      <div class="kv"><span class="k">월 임대료</span><span class="v" id="rRent">—</span></div>
+      <div class="kv"><span class="k">공용관리비 <span id="mgmtTag"></span></span><span class="v" id="rMgmt">—</span></div>
+      <div class="kv"><span class="k">주차료</span><span class="v" id="rPark">—</span></div>
+      <div class="kv total"><span class="k">월 고정비 합계</span><span class="v" id="rTotal">—</span></div>
+    </div>
+    <div class="card">
+      <p class="note" id="rentNote"></p>
+    </div>
+  </section>
+
+  <footer><div class="disclaimer" id="disclaimer"></div></footer>
+</div>
+
+<script>
+/* ============================================================
+   PARAMS — 강변 스카이타워(강변역 청년안심주택) 공공지원 민간임대
+   2026.07.28 최초 입주자 모집공고(수정) 원문 기준.
+   임대형: 분양가·모기지 없음. 보증금 40/50/60% 전환 + 월임대료.
+   금액 단위는 모두 원(₩).
+   ============================================================ */
+const PARAMS = {
+  complex: "강변 스카이타워",
+  brand: "강변역 청년안심주택",
+  region: "서울특별시 광진구 강변역로 10 (구의동 587-6)",
+  source: "2026.07.28 최초 입주자 모집공고(수정)",
+  totalUnits: 85,
+
+  // 전년도 도시근로자 가구원수별 가구당 월평균소득 (원/월). 공고 원문 표 그대로.
+  income: {
+    hhKeys: [1, 2, 3, 4, 5],
+    r100: { 1: 3813363, 2: 5866270, 3: 8168429, 4: 8802202, 5: 9326985 },
+    r110: { 1: 4194699, 2: 6452897, 3: 8985272, 4: 9682422, 5: 10259684 },
+    r120: { 1: 4576036, 2: 7039524, 3: 9802115, 4: 10562642, 5: 11192382 },
+    perPersonOver5: 579278  // 6인 이상: 5인 소득 + 1인당 579,278원
+  },
+
+  // 자산 기준 (원). 특별공급만 적용. 일반공급은 자산 요건 없음.
+  asset: {
+    youthSpecial: 251000000,   // 청년 특별공급: 본인 자산
+    coupleSpecial: 345000000,  // (예비)신혼부부 특별공급 자격기준 — 이 공고 특별공급 배정물량은 청년뿐
+    car: 45420000              // 전 유형 공통 (이륜차 포함)
+  },
+
+  // 공급유형
+  types: {
+    ysp:  { label: "청년 특별공급",     units: 18, incomeCap: true,  assetCap: "youthSpecial", pick: "소득순위 → 지역순위 → 추첨" },
+    ygen: { label: "청년 일반공급",     units: 20, incomeCap: false, assetCap: null,           pick: "무작위 추첨" },
+    ngen: { label: "신혼부부 일반공급", units: 47, incomeCap: false, assetCap: null,           pick: "무작위 추첨" }
+  },
+
+  rent: {
+    depositPct: 10,        // 계약금 = 보증금의 10%
+    penalty: 1000000,      // 계약 파기 위약금
+    mgmtPerSqm: 2220,      // 공용관리비 추정단가(원/㎡·월) — 공고 제시 2개 타입에서 역산(2,210·2,234)
+    units: [
+      { key:"청년 18형 · 특별", tier:"ysp", area:18.95, contract:49.73, supply:6,
+        d:{40:{dep:64000000,rent:380000},50:{dep:80000000,rent:310000},60:{dep:96000000,rent:260000}},
+        mgmt:109900, mgmtSrc:"공고 제시" },
+      { key:"청년 19형 · 특별", tier:"ysp", area:19.54, contract:51.30, supply:12,
+        d:{40:{dep:66000000,rent:390000},50:{dep:82000000,rent:320000},60:{dep:98400000,rent:270000}},
+        mgmt:null, mgmtSrc:"면적 비례 추정" },
+      { key:"청년 19형 · 일반", tier:"ygen", area:19.54, contract:51.30, supply:20,
+        d:{40:{dep:78000000,rent:460000},50:{dep:97000000,rent:390000},60:{dep:117000000,rent:320000}},
+        mgmt:null, mgmtSrc:"면적 비례 추정" },
+      { key:"신혼 36A형 · 일반", tier:"ngen", area:36.76, contract:95.33, supply:15,
+        d:{40:{dep:118000000,rent:660000},50:{dep:147000000,rent:550000},60:{dep:177000000,rent:450000}},
+        mgmt:null, mgmtSrc:"면적 비례 추정" },
+      { key:"신혼 36B형 · 일반", tier:"ngen", area:36.75, contract:95.34, supply:20,
+        d:{40:{dep:118000000,rent:660000},50:{dep:147000000,rent:550000},60:{dep:177000000,rent:450000}},
+        mgmt:213000, mgmtSrc:"공고 제시" },
+      { key:"신혼 38형 · 일반", tier:"ngen", area:38.37, contract:99.72, supply:4,
+        d:{40:{dep:120000000,rent:680000},50:{dep:153000000,rent:570000},60:{dep:183000000,rent:460000}},
+        mgmt:null, mgmtSrc:"면적 비례 추정" },
+      { key:"신혼 39형 · 일반", tier:"ngen", area:39.57, contract:102.46, supply:8,
+        d:{40:{dep:124000000,rent:690000},50:{dep:155000000,rent:580000},60:{dep:186000000,rent:470000}},
+        mgmt:null, mgmtSrc:"면적 비례 추정" }
+    ]
+  },
+
+  schedule: {
+    announce: "2026.07.28(화)",
+    apply: "2026.08.04(화) 10:00 ~ 08.06(목) 23:00",
+    result: "2026.08.08(토) 15:00",
+    docs: "2026.08.09(일) ~ 08.12(수) 이메일 사본",
+    contract: "2026.08.13(목) ~ 08.19(수)",
+    movein: "2026.08.21(금) ~ 09.30(수)"
+  },
+  site: "www.gangbyeonskytower.co.kr",
+  tel: "02-455-3961"
+};
+/* ===================== PARAMS 끝 ===================== */
+
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const comma = n => Math.round(n).toLocaleString("ko-KR");
+  function wonText(won){
+    const m = won/10000, eok = Math.floor(m/10000), rest = Math.round(m%10000);
+    if(eok>0) return eok+"억 "+(rest>0? comma(rest)+"만원" : "");
+    return comma(Math.round(m))+"만원";
+  }
+
+  $("plateText").textContent = "🏙 "+PARAMS.brand+" 계산기";
+  $("subText").textContent = PARAMS.complex+" · "+PARAMS.source+" 기준 · 3초 확인";
+  $("disclaimer").innerHTML =
+    "<b>안내</b> · 기준 수치는 <b>"+PARAMS.complex+" "+PARAMS.source+"</b> 원문 기준입니다. "
+    + "공공지원 민간임대는 <b>분양전환 우선권이 없는</b> 임대주택(계약 2년 단위·최대 10년 거주)입니다. "
+    + "공용관리비 중 일부 타입은 <b>면적 비례 추정치</b>이며, 전기·수도·가스는 사용량 실비로 별도 부과됩니다. "
+    + "임대보증금 보증수수료 임차인 부담분(25%)도 입주 후 별도 발생합니다. "
+    + "정확한 금액·자격·일정은 <b>"+PARAMS.site+"</b> 또는 입주지원센터("+PARAMS.tel+")에서 반드시 확인하세요. 본 계산은 참고용 추정치입니다.";
+
+  // 탭
+  const tabs = document.querySelectorAll(".tab"), panels = document.querySelectorAll(".panel");
+  tabs.forEach(t => t.addEventListener("click", () => {
+    tabs.forEach(x => x.setAttribute("aria-selected", x===t ? "true":"false"));
+    panels.forEach(p => p.setAttribute("data-active", p.dataset.tab===t.dataset.tab ? "true":"false"));
+  }));
+  function stepper(id, cb){
+    const box = $(id); if(!box) return;
+    box.addEventListener("click", e => {
+      const b = e.target.closest("button"); if(!b) return;
+      box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x===b ? "true":"false"));
+      cb(b.dataset.v);
+    });
+  }
+
+  // 상태
+  let hh = 1, myType = "ysp", region = "1", ratio = 40, park = 0, unitIdx = 0;
+
+  // ===== TAB1 소득자격 =====
+  $("hh").innerHTML = PARAMS.income.hhKeys
+    .map((n,i) => `<button data-v="${n}"${i===0?' aria-pressed="true"':''}>${n}인</button>`).join("");
+  stepper("hh", v => { hh = +v; renderIncome(); renderRank(); });
+  stepper("typePick", v => { myType = v; renderIncome(); renderAsset(); renderRank(); });
+  $("income").addEventListener("input", () => { renderIncome(); renderRank(); });
+
+  function capAt(pctKey, n){
+    const t = PARAMS.income[pctKey];
+    if(t[n] !== undefined) return t[n];
+    return t[5] + PARAMS.income.perPersonOver5 * (n-5); // 6인 이상
+  }
+  function incomeRank(incWon){
+    if(incWon <= 0) return 0;
+    if(incWon <= capAt("r100", hh)) return 1;
+    if(incWon <= capAt("r110", hh)) return 2;
+    if(incWon <= capAt("r120", hh)) return 3;
+    return 4; // 초과
+  }
+
+  function renderIncome(){
+    const incWon = (+$("income").value || 0) * 10000;
+    const T = PARAMS.types[myType];
+    if(!T.incomeCap){
+      $("incomeResult").innerHTML =
+        `<div class="eyebrow">${T.label} · 소득 기준</div>`
+        + `<div class="big">소득 요건 없음</div>`
+        + `<div class="verdict ok">✓ 소득·자산·지역 요건 없이 신청 가능</div>`
+        + `<div class="note" style="margin-top:10px">일반공급은 <strong>연령(19~39세)·무주택·미혼(청년) 또는 혼인 7년 이내(신혼부부)·자동차가액</strong>만 보고, 경쟁 시 <strong>무작위 추첨</strong>으로 뽑습니다. 소득이 높아도 불리하지 않습니다.</div>`;
+      $("incomeNote").innerHTML = `참고로 입력하신 월 ${comma(+$("income").value||0)}만원은 ${hh}인 가구 기준 도시근로자 월평균소득의 약 <strong>${incWon>0?Math.round(incWon/capAt("r100",hh)*100):0}%</strong> 수준입니다(특별공급이라면 ${incomeRank(incWon)<=3&&incomeRank(incWon)>0?incomeRank(incWon)+"순위":"자격 초과"}).`;
+      return;
+    }
+    const cap = capAt("r120", hh);
+    const rank = incomeRank(incWon);
+    const pass = rank>=1 && rank<=3;
+    const fill = Math.min(100, cap ? incWon/cap*100 : 0);
+    let verdict, cls;
+    if(rank===0){ verdict = "소득을 입력하세요"; cls=""; }
+    else if(pass){ verdict = "✓ 소득 자격 통과 — 소득 "+rank+"순위"; cls="ok"; }
+    else { verdict = "✗ 120% 상한 초과 — 특별공급 신청 불가"; cls="no"; }
+
+    const rows = [[1,"100% 이하","r100"],[2,"110% 이하","r110"],[3,"120% 이하","r120"]].map(r => {
+      const hit = rank===r[0];
+      return `<div class="stage${hit?" hit":""}"><span class="dot" style="background:var(--s${r[0]})"></span>`
+        + `<span><b>소득 ${r[0]}순위</b> · ${r[1]}</span>`
+        + `<span class="pct">${wonText(capAt(r[2],hh))}</span></div>`;
+    }).join("");
+
+    $("incomeResult").innerHTML =
+      `<div class="eyebrow">${hh}인 가구 · 특별공급 소득 상한 (120%)</div>`
+      + `<div class="big">${wonText(cap)} <small>/ 월</small></div>`
+      + `<div class="verdict ${cls}">${verdict}</div>`
+      + `<div class="bar"><span style="width:${fill.toFixed(0)}%;background:${pass?"var(--ok)":"var(--seal)"}"></span></div>`
+      + `<div class="barscale"><span>0</span><span>내 소득 ${wonText(incWon)}</span><span>상한 ${wonText(cap)}</span></div>`
+      + `<div class="stages">${rows}</div>`;
+
+    $("incomeNote").innerHTML = pass
+      ? `특별공급은 <strong>소득순위가 지역순위보다 먼저</strong> 적용됩니다. 지금은 <strong>소득 ${rank}순위</strong>이므로, 1순위(100% 이하) 신청자가 물량을 채우면 순번이 밀릴 수 있습니다. 소득 요건이 부담되면 <strong>청년 일반공급(19형 20세대)</strong>은 소득·자산 요건이 아예 없습니다.`
+      : `120% 상한(${wonText(cap)})을 넘었어요. 가구원수 산정을 다시 확인해 보거나, 소득 요건이 없는 <strong>일반공급</strong>으로 신청하는 방법이 있습니다.`;
+  }
+
+  // ===== TAB2 자산·차량 =====
+  ["asset","car"].forEach(id => $(id).addEventListener("input", renderAsset));
+  function renderAsset(){
+    const T = PARAMS.types[myType];
+    const asset = (+$("asset").value || 0) * 10000;
+    const car = (+$("car").value || 0) * 10000;
+    const carCap = PARAMS.asset.car;
+    const passC = car <= carCap;
+    const assetCap = T.assetCap ? PARAMS.asset[T.assetCap] : null;
+    const passA = assetCap === null ? true : asset <= assetCap;
+    const pass = passA && passC;
+
+    $("assetResult").innerHTML =
+      `<div class="eyebrow">${T.label} · 자산·차량 기준</div>`
+      + `<div class="big">${pass ? "✓ 통과" : "✗ 초과"}</div>`
+      + `<div class="verdict ${pass?"ok":"no"}">`
+      + (assetCap===null ? "자산 요건 없음" : "자산 "+(passA?"통과":"초과"))
+      + ` · 자동차 ${passC?"통과":"초과"}</div>`
+      + `<div class="note" style="margin-top:10px">`
+      + (assetCap===null
+          ? `일반공급은 <strong>자산 상한이 없습니다.</strong> 자동차가액 <strong>${wonText(carCap)} 이하</strong>만 충족하면 됩니다.`
+          : `자산 상한 <strong>${wonText(assetCap)}</strong>${myType==="ysp"?"(본인 기준)":"(세대 총자산)"} / 자동차 상한 <strong>${wonText(carCap)}</strong>. 입력값: 자산 ${wonText(asset)}, 자동차 ${car>0?wonText(car):"없음"}.`)
+      + `</div>`;
+
+    $("assetNote").innerHTML = myType==="ysp"
+      ? `청년 특별공급 자산기준은 <strong>본인 자산 2억 5,100만원 이하</strong>입니다. 부동산·자동차는 제출하는 <strong>지방세 세목별 과세증명서</strong>로, 금융자산은 <strong>계좌정보통합관리서비스(내계좌 한눈에) + 주거래은행 신용정보조회서</strong>로 확인합니다.`
+      : `일반공급은 소득·자산·지역 요건이 없지만, <strong>무주택 요건과 자동차가액 4,542만원</strong>은 최초 계약뿐 아니라 <strong>2년마다 갱신계약 때도 계속 유지</strong>해야 합니다. (갱신 시 연령·소득 요건은 적용되지 않습니다.)`;
+  }
+
+  // ===== TAB3 순위 =====
+  stepper("regionPick", v => { region = v; renderRank(); });
+  function renderRank(){
+    const T = PARAMS.types[myType];
+    if(!T.incomeCap){
+      $("rankResult").innerHTML =
+        `<div class="eyebrow">${T.label} · 선정 방식</div>`
+        + `<div class="big">100% 추첨</div>`
+        + `<div class="verdict ok">순위·배점 없음 — 자격만 맞으면 동일 확률</div>`
+        + `<div class="note" style="margin-top:10px">일반공급 ${T.units}세대는 자격 충족자 전원을 대상으로 <strong>무작위 전산 추첨</strong>합니다. 광진구 거주자든 지방 거주자든 <strong>당첨 확률이 같습니다.</strong> 동·호수도 추첨으로 배정되고 <strong>변경·교환 불가</strong>입니다.</div>`;
+      return;
+    }
+    const incWon = (+$("income").value || 0) * 10000;
+    const iRank = incomeRank(incWon);
+    const regionLabel = {1:"서울 광진구 (1순위)", 2:"서울시 광진구 외 (2순위)", 3:"그 외 지역 (3순위)"}[region];
+    const ok = iRank>=1 && iRank<=3;
+    $("rankResult").innerHTML =
+      `<div class="eyebrow">청년 특별공급 · 내 경쟁 순위</div>`
+      + `<div class="big">${ok ? "소득 "+iRank+"순위" : "자격 미달"} <small>· 지역 ${region}순위</small></div>`
+      + `<div class="verdict ${ok?(iRank===1?"ok":"warn"):"no"}">${ok ? "소득순위 우선 적용 → 동일 소득순위 안에서 "+regionLabel+" 경쟁" : "소득 120% 초과로 특별공급 신청 불가"}</div>`
+      + `<div class="note" style="margin-top:10px">특별공급 18세대는 <strong>① 소득순위(100%→110%→120%) ② 지역순위(광진구→서울시→그 외) ③ 전산 추첨</strong> 순으로 선정됩니다. 지역순위는 <strong>거주지뿐 아니라 직장·대학 소재지</strong>로도 인정되므로, 광진구에 직장이나 학교가 있으면 1순위입니다. 단, 모집공고일(2026.07.28) 기준이며 행정구역 변경은 소급 인정되지 않습니다.</div>`;
+  }
+
+  // ===== TAB4 임대료 =====
+  $("unit").innerHTML = PARAMS.rent.units
+    .map((u,i) => `<button data-v="${i}"${i===0?' aria-pressed="true"':''}>${u.key} · ${u.area}㎡ · ${u.supply}세대</button>`).join("");
+  stepper("unit", v => { unitIdx = +v; renderRent(); });
+  stepper("ratio", v => { ratio = +v; renderRent(); });
+  stepper("park", v => { park = +v; renderRent(); });
+
+  function renderRent(){
+    const u = PARAMS.rent.units[unitIdx];
+    const c = u.d[ratio];
+    const mgmt = u.mgmt !== null ? u.mgmt : Math.round(u.contract * PARAMS.rent.mgmtPerSqm / 100) * 100;
+    const monthly = c.rent + mgmt + park;
+    const down = Math.round(c.dep * PARAMS.rent.depositPct / 100);
+
+    $("rentResult").innerHTML =
+      `<div class="eyebrow">${u.key} · 보증금 ${ratio}% 기준 월 부담</div>`
+      + `<div class="big">${comma(monthly)}<small> 원 / 월</small></div>`
+      + `<div class="verdict ok">보증금 ${wonText(c.dep)} + 월 임대료 ${comma(c.rent)}원</div>`
+      + `<div class="note" style="margin-top:10px">전용 ${u.area}㎡ / 계약 ${u.contract}㎡ · ${u.supply}세대 공급. 발코니 확장 포함이라 실사용 면적은 전용면적보다 넓습니다. 월 부담 = 임대료 + 공용관리비(추정) + 주차료이며, <strong>전기·수도·가스는 사용량 실비로 별도</strong>입니다.</div>`;
+
+    $("rDeposit").textContent = wonText(c.dep)+" ("+comma(c.dep)+"원)";
+    $("rDown").textContent = wonText(down);
+    $("rBalance").textContent = wonText(c.dep - down);
+    $("rRent").textContent = comma(c.rent)+"원";
+    $("rMgmt").textContent = comma(mgmt)+"원";
+    $("mgmtTag").innerHTML = `<span class="hint">(${u.mgmtSrc})</span>`;
+    $("rPark").textContent = park>0 ? comma(park)+"원" : "—";
+    $("rTotal").textContent = comma(monthly)+"원 / 월";
+
+    $("rentNote").innerHTML =
+      `<strong>보증금 비율을 올리면 월세가 내려갑니다.</strong> 이 공고는 40/50/60% 단위로만 전환되고, <strong>60% 초과는 불가</strong>(보증보험 가입액 사유)하며 <strong>계약 후에는 비율 변경이 안 됩니다.</strong> `
+      + `현재 선택 기준 계약금은 <strong>${wonText(down)}</strong>(보증금 10%), 잔금 ${wonText(c.dep-down)}은 실입주일까지 납부합니다. `
+      + `입주일까지 미납하면 계약 취소 + <strong>위약금 ${wonText(PARAMS.rent.penalty)}</strong>이 발생합니다. `
+      + `납부 계좌 예금주는 자금관리 대리사무 때문에 <strong>우리자산신탁</strong>으로 지정되어 있고, 입금 시 <strong>‘동호수+계약자 이름’</strong>으로 넣어야 합니다.`;
+  }
+
+  renderIncome(); renderAsset(); renderRank(); renderRent();
+})();
+</script>
+</body>
+</html>
