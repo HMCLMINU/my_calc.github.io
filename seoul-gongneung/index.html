@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>서울공릉 신혼희망타운 행복주택 계산기</title>
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --s1:#2f6d8f;--s2:#5a8fa8;--s3:#94b3c4;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:22px 0 18px;background:#ecebe4;padding:5px;border-radius:12px}
+  .tab{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:12.5px;padding:10px 4px;
+    border-radius:8px;color:var(--ink-soft);background:transparent;transition:all .18s ease}
+  .tab .n{display:block;font-size:9px;letter-spacing:.08em;opacity:.6;font-weight:800;margin-bottom:2px}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel[data-active="true"]{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  label.field{display:block;margin-bottom:16px}
+  label.field:last-child{margin-bottom:0}
+  .field .lab{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .stepper{display:flex;gap:8px;flex-wrap:wrap}
+  .stepper button{flex:1 1 44px;min-width:44px;cursor:pointer;border:1px solid var(--line);background:#fbfbf9;
+    border-radius:9px;font:inherit;font-weight:700;padding:9px 4px;color:var(--ink);transition:all .15s ease}
+  .stepper button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  .stepper.stack{flex-direction:column}
+  .stepper.stack button{flex:none;width:100%;text-align:left;padding:11px 13px}
+  input[type=number]{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  input:focus,.stepper button:focus-visible,.tab:focus-visible,select:focus{outline:2px solid var(--seal);outline-offset:1px}
+  select{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  .inline{display:flex;align-items:center;gap:8px}
+  .inline input{text-align:right}
+  .unit{color:var(--ink-soft);font-weight:700;font-size:13px;white-space:nowrap}
+  .result{border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid var(--line);background:var(--card)}
+  .result .eyebrow{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--ink-soft);text-transform:uppercase}
+  .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+  .big small{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .verdict{font-size:14px;font-weight:700}
+  .verdict.ok{color:var(--ok)}.verdict.warn{color:var(--warn)}.verdict.no{color:var(--seal)}
+  .bar{height:12px;border-radius:99px;background:#ececec;overflow:hidden;margin:12px 0 6px}
+  .bar>span{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+  .barscale{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);font-weight:700}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .chip{font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:99px;background:#f1efe8;color:var(--ink-soft)}
+  .chip.on{background:var(--seal-soft);color:var(--seal)}
+  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft);font-weight:600}.kv .v{font-weight:800}
+  .scorebreak{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+  .srow{display:flex;align-items:center;font-size:13px;gap:8px}
+  .srow .sk{color:var(--ink-soft);font-weight:600;flex:1}
+  .srow .sv{font-weight:800}
+  .srow .sbar{flex:none;width:78px;height:7px;border-radius:99px;background:#ececec;overflow:hidden}
+  .srow .sbar>span{display:block;height:100%;background:var(--gold)}
+  .note{font-size:12px;color:var(--ink-soft);line-height:1.55}
+  .note strong{color:var(--ink)}
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:#fbfaf6;border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+  .disclaimer b{color:var(--seal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate" id="plateText">🏠 행복주택 청약 계산기</span>
+    <h1>내 <span class="accent">소득·자산 자격</span>과<br>배점·임대료를 확인</h1>
+    <p class="sub" id="subText"></p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="income"><span class="n">1</span>소득자격</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="asset"><span class="n">2</span>자산</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="score"><span class="n">3</span>배점·순위</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="rent"><span class="n">4</span>임대료</button>
+  </div>
+
+  <!-- TAB1 소득자격 -->
+  <section class="panel" data-tab="income" data-active="true">
+    <div class="card">
+      <label class="field">
+        <span class="lab">가구원수 <span class="hint">(태아 포함)</span></span>
+        <div class="stepper" id="hh"></div>
+      </label>
+      <label class="field">
+        <span class="lab">출산자녀 <span class="hint">(2023.3.28 이후 출생·입양·태아 / 최대 2자녀 인정)</span></span>
+        <div class="stepper" id="birth">
+          <button data-v="0" aria-pressed="true">없음</button>
+          <button data-v="1">1인</button>
+          <button data-v="2">2인 이상</button>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lab">우리 가구 월평균 소득 <span class="hint">(세전 합산 / 만원)</span></span>
+        <div class="inline"><input type="number" id="income" inputmode="numeric" value="600"><span class="unit">만원 / 월</span></div>
+      </label>
+    </div>
+    <div class="card">
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">어느 자격으로 신청하나요? <span class="hint">자격·맞벌이 여부에 따라 적용 소득기준(%)이 달라집니다</span></span>
+        <div class="stepper stack" id="kindPick">
+          <button data-v="single" aria-pressed="true">신혼부부·예비신혼부부 (외벌이)</button>
+          <button data-v="dual">신혼부부·예비신혼부부 (맞벌이)</button>
+          <button data-v="parent">한부모가족</button>
+        </div>
+      </label>
+    </div>
+    <div class="result" id="incomeResult"></div>
+    <div class="card">
+      <p class="note"><strong>선정 순서:</strong> 소득·자산 자격 통과 → 거주지 순위 → 경쟁 시 배점(우선공급·주거약자용) → 추첨. 일반공급은 배점 없이 <strong>순위 → 추첨</strong>입니다. 우선공급 물량 29호를 먼저 채우고, 탈락자는 별도 신청 없이 일반공급(30호)으로 자동 전환됩니다.</p>
+      <div class="note" id="addNote" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- TAB2 자산 -->
+  <section class="panel" data-tab="asset" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">우리 세대 총자산 <span class="hint">(부동산+금융+기타 − 부채 / 만원)</span></span>
+        <div class="inline"><input type="number" id="asset" inputmode="numeric" value="20000"><span class="unit">만원</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">보유 자동차 가액 <span class="hint">(보건복지부 차량기준가액 / 만원)</span></span>
+        <div class="inline"><input type="number" id="car" inputmode="numeric" value="2000"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="result" id="assetResult"></div>
+    <div class="card"><p class="note" id="assetNote"></p></div>
+  </section>
+
+  <!-- TAB3 배점·순위 -->
+  <section class="panel" data-tab="score" data-active="false">
+    <div class="card">
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">어느 트랙인가요?</span>
+        <div class="stepper stack" id="trackPick"></div>
+      </label>
+    </div>
+    <div class="card" id="scoreCard">
+      <p class="note" id="scoreIntro" style="margin-bottom:14px"></p>
+      <div id="scoreFields"></div>
+    </div>
+    <div class="result" id="scoreResult"></div>
+    <div class="card"><p class="note" id="scoreNote"></p></div>
+  </section>
+
+  <!-- TAB4 임대료 -->
+  <section class="panel" data-tab="rent" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">주택형</span>
+        <div class="stepper" id="unit"></div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">보증금 ↔ 월세 전환 <span class="hint">100만원 단위 / 둘 중 하나만 입력</span></span>
+        <div class="inline"><span class="unit">보증금 증액</span><input type="number" id="convUp" inputmode="numeric" value="0"><span class="unit">만원</span></div>
+        <div class="inline" style="margin-top:10px"><span class="unit">보증금 감액</span><input type="number" id="convDown" inputmode="numeric" value="0"><span class="unit">만원</span></div>
+        <p class="note" id="convLimit" style="margin-top:9px"></p>
+      </label>
+    </div>
+    <div class="result" id="rentResult"></div>
+    <div class="card">
+      <div class="kv"><span class="k">기본 임대보증금</span><span class="v" id="baseDeposit">—</span></div>
+      <div class="kv"><span class="k">기본 월임대료</span><span class="v" id="baseRent">—</span></div>
+      <div class="kv"><span class="k">조정 후 보증금</span><span class="v" id="finalDeposit">—</span></div>
+      <div class="kv"><span class="k">조정 후 월임대료</span><span class="v" id="finalRent">—</span></div>
+      <div class="kv"><span class="k">계약금(보증금 10%)</span><span class="v" id="downpay">—</span></div>
+      <div class="kv"><span class="k">잔금</span><span class="v" id="balance">—</span></div>
+    </div>
+    <div class="card"><p class="note" id="rentNote"></p></div>
+  </section>
+
+  <footer><div class="disclaimer" id="disclaimer"></div></footer>
+</div>
+
+<script>
+/* ============================================================
+   PARAMS — 서울공릉 신혼희망타운 행복주택 입주자모집공고
+   (공고일 2026.07.29, 주택관리번호 2026000363) 원문 기준.
+   행복주택은 분양이 아니라 임대 + 분양전환 없음.
+   소득·자산 "이하" 자격 + 보증금/월세 전환 구조.
+   ============================================================ */
+const PARAMS = {
+  complex: "서울공릉 신혼희망타운 행복주택",
+  region: "서울특별시 노원구 공릉동 240-1",
+  source: "LH 청약플러스 공고 2026.07.29, 관리번호 2026000363",
+  moveIn: "2027.10 (예정)",
+
+  income: {
+    hhKeys: [2,3,4,5,6],
+    // 공고 <가산적용 상세 소득기준> 표를 그대로. 단위 = 원/월.
+    // 2인 100%는 공고에 "-"(미표기) — 2인은 최소 110%부터 적용된다.
+    byPct: {
+      100: {          3:8168429,  4:8802202,  5:9326985,  6:9906263  },
+      110: { 2:6452897, 3:8985272,  4:9682422,  5:10259684, 6:10896889 },
+      120: { 2:7039524, 3:9802115,  4:10562642, 5:11192382, 6:11887516 },
+      130: { 2:7626151, 3:10618958, 4:11442863, 5:12125081, 6:12878142 },
+      140: { 2:8212778, 3:11435801, 4:12323083, 5:13057779, 6:13868768 }
+    },
+    // 7인 이상: 6인 금액 + 1인당 579,278원
+    extraPerPerson: 579278,
+    kindLabel: { single:"신혼부부(외벌이)", dual:"신혼부부(맞벌이)", parent:"한부모가족" }
+  },
+
+  // 자산기준(원). 출산자녀수(’23.3.28 이후, 최대 2자녀)에 따라 가산.
+  asset: {
+    total: { 0:345000000, 1:379000000, 2:413000000 },
+    car:   { 0:45420000,  1:49960000,  2:54510000  }
+  },
+
+  // 배점표 — 트랙마다 다르다. 일반공급(일반형)은 배점 없이 순위→추첨.
+  score: {
+    tracks: {
+      pri: {
+        label: "우선공급 (일반형)",
+        intro: "노원구 거주자가 1순위, 노원구 외 서울시 거주자가 2순위입니다. <strong>2순위는 ② 청약통장 항목만</strong> 적용됩니다(만점 3점).",
+        note: "우선공급 경쟁 시 선정순서: <strong>2세 미만 자녀가 있는 자 → 순위 → 배점 → 해당 순위 지역 거주기간이 오래인 자 → 추첨</strong>. 거주기간은 공고일 현재 주민등록표상 '계속하여' 등재된 기간만 인정됩니다(중간에 타 지역 전출 시 재전입일부터 재산정).",
+        items: [
+          { key:"resid", label:"거주지 및 거주기간", hint:"노원구 기준", options:[
+            {label:"노원구 3년 이상 거주",points:3},
+            {label:"노원구 3년 미만 거주",points:1},
+            {label:"노원구 외 서울시 거주(2순위·미적용)",points:0}]},
+          { key:"bank", label:"주택청약종합저축 납입횟수", hint:"청약통장 순위확인서 기준 회차", options:[
+            {label:"가입 2년 경과 + 24회 이상 납입",points:3},
+            {label:"가입 6개월 경과 + 6~23회 납입",points:1},
+            {label:"6회 미만",points:0}]}
+        ]
+      },
+      weak: {
+        label: "주거약자용 주택 (우선·일반 공통)",
+        intro: "주거약자용은 <strong>우선공급·일반공급 모두 배점</strong>을 적용합니다(만점 9점). 주거약자가 아닌 사람이 주거약자용에 청약하면 탈락 처리됩니다.",
+        note: "주거약자 = 65세 이상 고령자, 장애인복지법상 장애인, 상이등급 1~7급 국가유공자·보훈보상대상자, 5·18민주화운동부상자(1~14급), 고엽제후유의증환자(경도 이상) 등. 선정순서는 <strong>순위 → 배점 → (우선공급은 거주기간) → 추첨</strong>. 중증장애인 배점은 장애인고용촉진법상 확인서를 제출해야 인정됩니다.",
+        items: [
+          { key:"family", label:"부양가족수", hint:"공급신청자 본인 제외·태아 포함", options:[
+            {label:"3인 이상",points:3},{label:"2인",points:2},{label:"1인",points:1},{label:"없음",points:0}]},
+          { key:"resid", label:"해당 주택건설지역 거주기간", hint:"서울특별시 계속 거주", options:[
+            {label:"5년 이상",points:3},{label:"3년 이상 5년 미만",points:2},{label:"1년 이상 3년 미만",points:1},{label:"1년 미만",points:0}]},
+          { key:"disab", label:"장애정도", hint:"", options:[
+            {label:"중증장애인",points:3},{label:"그 외 장애인",points:1},{label:"해당 없음",points:0}]}
+        ]
+      },
+      gen: {
+        label: "일반공급 (일반형)",
+        intro: "",
+        note: "",
+        items: [],
+        rankOnly: true
+      }
+    },
+    // 일반공급·주거약자 일반공급의 거주지 순위 (신청자 본인 또는 배우자 기준)
+    ranks: [
+      { v:1, label:"서울특별시 또는 연접지역", desc:"의정부·남양주·구리·하남·성남·과천·안양·광명·부천·인천·김포·고양·양주" },
+      { v:2, label:"그 외 경기도", desc:"주택공급에 관한 규칙 제4조제3항 각호 지역 중 1순위 외" },
+      { v:3, label:"그 외 지역", desc:"1·2순위에 해당하지 않는 경우" }
+    ]
+  },
+
+  // 임대조건(원). 공고 <임대조건> 표. 계약금 10%.
+  rent: {
+    depositPct: 10,
+    convUpRate: 3.5,     // 보증금 감액 → 월세 증가 시 이율 연 3.5%
+    convDownRate: 6.0,   // 월임대료 → 보증금 증액 시 이율 연 6.0%
+    convMaxUp: 99000000,   // 증액 한도
+    convMaxDown: 178000000,// 감액 한도
+    units: {
+      "59A형": { deposit:210800000, rent:825630, area:"전용 59.95㎡" }
+    }
+  }
+};
+/* ===================== PARAMS 끝 ===================== */
+
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const comma = n => Math.round(n).toLocaleString("ko-KR");
+  function wonText(won){
+    const m=won/10000, eok=Math.floor(m/10000), rest=Math.round(m%10000);
+    if(eok>0) return eok+"억 "+(rest>0? comma(rest)+"만원":"");
+    return comma(Math.round(m))+"만원";
+  }
+  const manwonText = m => wonText(m*10000);
+
+  $("plateText").textContent = "🏠 행복주택 청약 계산기";
+  $("subText").textContent = PARAMS.complex+" 공고 기준 · 입주 "+PARAMS.moveIn;
+  $("disclaimer").innerHTML = "<b>안내</b> · 기준 수치는 <b>"+PARAMS.complex+" 공고</b>("+PARAMS.source+") 기준입니다. "
+    + "행복주택은 <b>분양전환되지 않는 임대주택</b>이며 최대 거주기간(무자녀 10년 / 미성년자녀 1명 이상 14년)이 있습니다. "
+    + "임대보증금·월임대료는 매년 4월 1일 기준으로 갱신되므로 예비입주자는 계약 시점의 갱신된 조건이 적용됩니다. "
+    + "소득·자산 가산, 배점, 임대조건은 공고차수에 따라 다를 수 있으니 <b>LH 청약플러스 공고문</b>에서 반드시 다시 확인하세요. 본 계산은 참고용 추정치입니다.";
+
+  const tabs=document.querySelectorAll(".tab"), panels=document.querySelectorAll(".panel");
+  tabs.forEach(t=>t.addEventListener("click",()=>{
+    tabs.forEach(x=>x.setAttribute("aria-selected",x===t?"true":"false"));
+    panels.forEach(p=>p.setAttribute("data-active",p.dataset.tab===t.dataset.tab?"true":"false"));
+  }));
+  function stepper(id,cb){
+    const box=$(id); if(!box) return;
+    box.addEventListener("click",e=>{
+      const b=e.target.closest("button"); if(!b) return;
+      box.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+      cb(b.dataset.v);
+    });
+  }
+
+  // ===== TAB1 소득자격 =====
+  const hhKeys=PARAMS.income.hhKeys;
+  $("hh").innerHTML = hhKeys.map((n,i)=>`<button data-v="${n}"${n===3?' aria-pressed="true"':''}>${n}인</button>`).join("");
+  let hh=3, birth=0, kind="single";
+  stepper("hh",v=>{hh=+v;renderIncome();});
+  stepper("birth",v=>{birth=+v;renderIncome();renderAsset();});
+  stepper("kindPick",v=>{kind=v;renderIncome();});
+  $("income").addEventListener("input",renderIncome);
+
+  /* 공고 <출생자녀 수에 따른 가산 소득·자산 기준> 표 그대로.
+     한부모: 2인 0자녀 110 / 1자녀 120,  3인+ 0자녀 100 / 1자녀 110 / 2자녀+ 120
+     외벌이: 2인 110, 3인 0자녀 100 / 1자녀 110, 4인+ 0자녀 100 / 1자녀 110 / 2자녀+ 120
+     맞벌이: 2인 130, 3인 0자녀 120 / 1자녀 130, 4인+ 0자녀 120 / 1자녀 130 / 2자녀+ 140 */
+  function pctFor(kind,n,kids){
+    if(kind==="parent"){
+      if(n<=2) return kids>=1?120:110;
+      return kids>=2?120:(kids===1?110:100);
+    }
+    if(kind==="dual"){
+      if(n<=2) return 130;
+      if(n===3) return kids>=1?130:120;
+      return kids>=2?140:(kids===1?130:120);
+    }
+    if(n<=2) return 110;
+    if(n===3) return kids>=1?110:100;
+    return kids>=2?120:(kids===1?110:100);
+  }
+  function capFor(pct,n){
+    const row=PARAMS.income.byPct[pct]; if(!row) return 0;
+    if(row[n]!=null) return row[n];
+    if(n>6) return row[6] + (n-6)*PARAMS.income.extraPerPerson; // 7인 이상 가산
+    return 0;
+  }
+  function renderIncome(){
+    const incWon=(+$("income").value||0)*10000;
+    const pct=pctFor(kind,hh,birth);
+    const cap=capFor(pct,hh);
+    const pass=incWon>0 && incWon<=cap;
+    const fill=Math.min(100, cap? incWon/cap*100 : 0);
+    const kl=PARAMS.income.kindLabel[kind];
+    let verdict,cls;
+    if(incWon<=0){verdict="소득을 입력하세요";cls="";}
+    else if(pass){verdict="✓ 소득자격 통과";cls="ok";}
+    else{verdict="✗ 소득 상한 초과";cls="no";}
+    const gap = pass ? cap-incWon : incWon-cap;
+    $("incomeResult").innerHTML=
+      `<div class="eyebrow">${hh}인 가구 · ${kl} · 적용 ${pct}%</div>`
+      +`<div class="big">${wonText(cap)} <small>/ 월 이하</small></div>`
+      +`<div class="verdict ${cls}">${verdict}</div>`
+      +`<div class="bar"><span style="width:${fill.toFixed(0)}%;background:${pass?"var(--ok)":"var(--seal)"}"></span></div>`
+      +`<div class="barscale"><span>0</span><span></span><span>상한 ${wonText(cap)}</span></div>`
+      +`<div class="chips">`
+      +`<span class="chip on">전년도 도시근로자 월평균소득의 ${pct}%</span>`
+      +`<span class="chip">${hh}인 가구</span>`
+      +(birth?`<span class="chip">출산자녀 ${birth===2?"2인 이상":"1인"} 가산</span>`:``)
+      +`</div>`
+      +`<div class="note" style="margin-top:12px">`
+      +(incWon<=0 ? "월평균 소득(세전 합산)을 입력하면 통과 여부를 계산합니다."
+        : pass ? `상한까지 <strong>${wonText(gap)}</strong> 여유가 있습니다. 소득 기준일은 공고일(2026.7.29)이며, 금융자산·부채는 조사기준일 조회값이 적용됩니다.`
+               : `상한을 <strong>${wonText(gap)}</strong> 초과했습니다. 맞벌이 여부·가구원수(태아 포함)·출산자녀 가산을 다시 확인해보세요.`)
+      +`</div>`;
+
+    let warn="";
+    if(kind!=="parent" && hh===2 && birth>=1)
+      warn = `⚠️ 자녀(태아 포함)는 세대구성원에 들어가므로 신혼부부 2인 가구 + 출산자녀 조합은 공고 표에 없습니다. 가구원수를 3인 이상으로 다시 골라주세요. 현재는 2인·0자녀 기준(${pct}%)으로 계산됩니다.<br><br>`;
+    if(kind==="parent" && hh===2 && birth>=2)
+      warn = `⚠️ 한부모 2인 가구(본인+자녀 1명)에 출산자녀 2인 조합은 공고 표에 없습니다. 가구원수를 확인해주세요. 현재는 1자녀 기준(120%)으로 계산됩니다.<br><br>`;
+    $("addNote").innerHTML = warn
+      + `<strong>맞벌이 판단:</strong> 소득세법상 사업소득·근로소득이 부부 모두에게 있는 경우입니다(국민연금 가입증명서·건강보험자격득실확인서로 판단). `
+      + `2인 가구는 기본 기준이 110%(맞벌이 130%)로 이미 상향돼 있고, 출산자녀(2023.3.28 이후 출생·입양·태아, 최대 2자녀)가 있으면 10~20%p 더 올라갑니다.`;
+  }
+
+  // ===== TAB2 자산 =====
+  ["asset","car"].forEach(id=>$(id).addEventListener("input",renderAsset));
+  function renderAsset(){
+    const totalCap=PARAMS.asset.total[birth]??PARAMS.asset.total[0];
+    const carCap=PARAMS.asset.car[birth]??PARAMS.asset.car[0];
+    const asset=(+$("asset").value||0)*10000, car=(+$("car").value||0)*10000;
+    const passA=asset<=totalCap, passC=car<=carCap;
+    const pass=passA&&passC;
+    $("assetResult").innerHTML=
+      `<div class="eyebrow">자산 기준 (출산자녀 ${birth===2?"2인 이상":birth+"인"} 반영)</div>`
+      +`<div class="big">${pass?"✓ 통과":"✗ 초과"}</div>`
+      +`<div class="verdict ${pass?"ok":"no"}">총자산 ${passA?"통과":"초과"} · 자동차 ${passC?"통과":"초과"}</div>`
+      +`<div class="chips">`
+      +`<span class="chip ${passA?"on":""}">총자산 상한 ${wonText(totalCap)}</span>`
+      +`<span class="chip ${passC?"on":""}">자동차 상한 ${wonText(carCap)}</span>`
+      +`</div>`
+      +`<div class="note" style="margin-top:12px">우리 세대: 총자산 ${manwonText(+$("asset").value||0)}, 자동차 ${manwonText(+$("car").value||0)}.</div>`;
+    $("assetNote").innerHTML = "<strong>총자산</strong> = 부동산(공시가격) + 자동차 + 금융자산 + 기타자산 − 부채. 무주택으로 인정되는 주택도 부동산 가액에는 포함됩니다. "
+      + "<strong>자동차</strong>는 비영업용 승용차 기준이며, 2대 이상이면 가액이 높은 차량 하나로 판정합니다. 장애인사용 자동차와 상이등급 1~7급 국가유공자 보철용 차량은 제외됩니다. "
+      + "출산자녀 가산: 1인 → 총자산 3.79억·자동차 4,996만원, 2인 이상 → 총자산 4.13억·자동차 5,451만원.";
+  }
+
+  // ===== TAB3 배점·순위 =====
+  const trackKeys=Object.keys(PARAMS.score.tracks);
+  $("trackPick").innerHTML = trackKeys.map((k,i)=>
+    `<button data-v="${k}"${i===0?' aria-pressed="true"':''}>${PARAMS.score.tracks[k].label}</button>`).join("");
+  let track=trackKeys[0];
+  stepper("trackPick",v=>{track=v;buildScore();renderScore();});
+
+  function buildScore(){
+    const t=PARAMS.score.tracks[track];
+    $("scoreIntro").innerHTML=t.intro||"";
+    $("scoreIntro").style.display=t.intro?"block":"none";
+    $("scoreNote").innerHTML=t.note||"";
+    if(t.rankOnly){
+      $("scoreFields").innerHTML =
+        `<label class="field" style="margin-bottom:0"><span class="lab">거주지 또는 소득 근거지 <span class="hint">신청자 본인 또는 배우자 기준</span></span>`
+        +`<select id="rankSel">`+PARAMS.score.ranks.map((r,i)=>
+            `<option value="${r.v}"${i===0?" selected":""}>${r.v}순위 — ${r.label}</option>`).join("")
+        +`</select></label>`;
+      $("rankSel").addEventListener("change",renderScore);
+      return;
+    }
+    $("scoreFields").innerHTML = t.items.map(it=>{
+      const opts=it.options.map((o,i)=>`<option value="${o.points}"${i===0?" selected":""}>${o.label} — ${o.points}점</option>`).join("");
+      const hint=it.hint?`<span class="hint">${it.hint}</span>`:"";
+      return `<label class="field"><span class="lab">${it.label} ${hint}</span><select data-key="${it.key}">${opts}</select></label>`;
+    }).join("");
+    $("scoreFields").querySelectorAll("select").forEach(s=>s.addEventListener("change",renderScore));
+  }
+  function renderScore(){
+    const t=PARAMS.score.tracks[track];
+    if(t.rankOnly){
+      const v=+($("rankSel")?.value||1);
+      const r=PARAMS.score.ranks.find(x=>x.v===v);
+      $("scoreResult").innerHTML=
+        `<div class="eyebrow">일반공급 — 배점 없음</div>`
+        +`<div class="big">${v}순위</div>`
+        +`<div class="verdict ${v===1?"ok":v===2?"warn":"no"}">${r.label}</div>`
+        +`<div class="note" style="margin-top:10px">일반공급(일반형)은 <strong>순위 → 추첨</strong>으로만 선정합니다. 배점표가 적용되지 않으니 청약통장 회차·거주기간으로 유리해지지 않습니다. `
+        +`같은 순위 안에서는 전산 추첨이며, ${v===1?"1순위는 경쟁이 가장 치열합니다.":"앞 순위에서 물량이 소진되면 기회가 오지 않을 수 있습니다."}</div>`
+        +`<div class="chips"><span class="chip on">${r.desc}</span></div>`;
+      $("scoreNote").innerHTML="‘소득 근거지’는 사업자등록증(법인등기부등본)으로 확인하며, 실제 근무지가 사업자등록증 소재지와 다르면 재직증명서·근로계약서를 추가 제출해야 인정됩니다. 우선공급에서 탈락하면 별도 신청 없이 일반공급으로 전환되지만, <strong>우선공급 자격 자체를 못 갖추면 전환 없이 탈락</strong>합니다.";
+      return;
+    }
+    const items=t.items;
+    const max=items.reduce((s,it)=>s+Math.max(...it.options.map(o=>o.points)),0);
+    const selects=$("scoreFields").querySelectorAll("select");
+    let total=0; const rows=[];
+    selects.forEach((s,i)=>{const p=+s.value;total+=p;rows.push([items[i].label,p,Math.max(...items[i].options.map(o=>o.points))]);});
+    const pctFull=max? total/max*100 : 0;
+    const grade=pctFull>=80?["상위권","ok"]:pctFull>=50?["중위권 — 동점 추첨 대비","warn"]:["하위권 — 상향 여지 큼","no"];
+    const breakdown=rows.map(r=>`<div class="srow"><span class="sk">${r[0]}</span><span class="sbar"><span style="width:${r[2]?r[1]/r[2]*100:0}%"></span></span><span class="sv">${r[1]} / ${r[2]}</span></div>`).join("");
+    $("scoreResult").innerHTML=
+      `<div class="eyebrow">${t.label} 예상 배점</div>`
+      +`<div class="big">${total} <small>/ ${max}점</small></div>`
+      +`<div class="verdict ${grade[1]}">${grade[0]}</div>`
+      +`<div class="scorebreak">${breakdown}</div>`
+      +`<div class="note" style="margin-top:12px">동점이면 ${track==="pri"?"해당 순위 지역 거주기간이 오래인 사람 → 추첨":"추첨"}으로 갈립니다. 민영주택 84점 가점제와는 전혀 다른 행복주택 자체 배점표입니다.</div>`;
+  }
+
+  // ===== TAB4 임대료 =====
+  const unitKeys=Object.keys(PARAMS.rent.units);
+  $("unit").innerHTML = unitKeys.map((u,i)=>`<button data-v="${u}"${i===0?' aria-pressed="true"':''}>${u}</button>`).join("");
+  let unit=unitKeys[0];
+  stepper("unit",v=>{unit=v;renderRent();});
+  ["convUp","convDown"].forEach(id=>$(id).addEventListener("input",renderRent));
+  $("convLimit").innerHTML = `전환 한도: 보증금 <strong>최대 ${wonText(PARAMS.rent.convMaxUp)} 증액</strong> / <strong>최대 ${wonText(PARAMS.rent.convMaxDown)} 감액</strong>. 한도를 넘겨 입력하면 한도로 잘라서 계산합니다.`;
+
+  function renderRent(){
+    const u=PARAMS.rent.units[unit];
+    let up=Math.max(0,(+$("convUp").value||0))*10000;
+    let down=Math.max(0,(+$("convDown").value||0))*10000;
+    const capUp=Math.min(up,PARAMS.rent.convMaxUp), capDown=Math.min(down,PARAMS.rent.convMaxDown);
+    const clamped = (up>capUp)||(down>capDown);
+    up=capUp; down=capDown;
+    const deposit=u.deposit + up - down;
+    // 보증금 증액분 × 6.0%/12 만큼 월세 감소, 감액분 × 3.5%/12 만큼 월세 증가
+    let rent=u.rent - up*(PARAMS.rent.convDownRate/100)/12 + down*(PARAMS.rent.convUpRate/100)/12;
+    rent=Math.floor(rent/10)*10; // 공고 표기 관례(10원 절사)와 일치시킴
+    if(rent<0) rent=0;
+    const monthlyTotal=rent;
+    $("rentResult").innerHTML=
+      `<div class="eyebrow">${unit} (${u.area}) 조정 후 월 부담</div>`
+      +`<div class="big">${comma(monthlyTotal)}<small> 원 / 월</small></div>`
+      +`<div class="verdict ok">보증금 ${wonText(deposit)}</div>`
+      +`<div class="chips">`
+      +(up?`<span class="chip on">증액 ${wonText(up)} · 연 6.0%</span>`:``)
+      +(down?`<span class="chip on">감액 ${wonText(down)} · 연 3.5%</span>`:``)
+      +(!up&&!down?`<span class="chip">공고 기본 조건</span>`:``)
+      +`</div>`
+      +`<div class="note" style="margin-top:12px">`
+      +(clamped?`⚠️ 전환 한도를 넘겨 입력해서 한도값으로 계산했습니다.<br>`:``)
+      +`보증금을 올리면(증액, 이율 연 6.0%) 월세가 내려가고, 보증금을 낮추면(감액, 이율 연 3.5%) 월세가 올라갑니다. 100만원 단위로 조정하세요. 관리비는 별도입니다.</div>`;
+    $("baseDeposit").textContent=wonText(u.deposit);
+    $("baseRent").textContent=comma(u.rent)+"원";
+    $("finalDeposit").textContent=wonText(deposit);
+    $("finalRent").textContent=comma(rent)+"원";
+    $("downpay").textContent=wonText(u.deposit*PARAMS.rent.depositPct/100);
+    $("balance").textContent=wonText(u.deposit-u.deposit*PARAMS.rent.depositPct/100);
+  }
+  $("rentNote").innerHTML = "계약금·잔금은 <strong>공고 기본 보증금(2억 1,080만원)</strong> 기준으로 표시합니다(계약금 10% = 2,108만원, 잔금 1억 8,972만원). "
+    + "전환은 임차인 선택사항이며 100만원 단위로만 가능합니다. 전환이율은 변경될 수 있고, 변경 시 변경된 이율로 다시 산정됩니다. "
+    + "전세자금대출은 주택도시기금 취급은행(우리·KB국민·NH·신한·IBK기업)에서 가능하며, 부동산거래 전자계약시스템으로 계약하면 확정일자 자동 부여 및 버팀목전세대출 금리 인하 혜택이 있습니다.";
+
+  renderIncome(); renderAsset(); buildScore(); renderScore(); renderRent();
+})();
+</script>
+</body>
+</html>
