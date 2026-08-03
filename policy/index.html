@@ -675,5 +675,17 @@ $("#sources").innerHTML = POLICY.sources.map(s => "<a href='" + s.url + "' targe
 
 render();
 </script>
+
+<!-- 방문 통계(GoatCounter). GC_CODE에 본인 코드를 넣으면 켜지고, 비워두면 아무 동작도 하지 않습니다. -->
+<script>
+var GC_CODE = "minu";
+if(GC_CODE){
+  var _gc = document.createElement("script");
+  _gc.async = true;
+  _gc.src = "https://gc.zgo.at/count.js";
+  _gc.setAttribute("data-goatcounter", "https://" + GC_CODE + ".goatcounter.com/count");
+  document.body.appendChild(_gc);
+}
+</script>
 </body>
 </html>

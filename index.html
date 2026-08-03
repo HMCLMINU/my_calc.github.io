@@ -47,6 +47,8 @@
   .calcard .go .arrow{transition:transform .12s ease}
   a.calcard:hover .go .arrow{transform:translateX(3px)}
   .empty{font-size:13px;color:var(--ink-soft);padding:24px 0;text-align:center}
+  .total{display:none;font-size:12px;font-weight:800;color:var(--ink-soft);background:#fbfaf6;
+    border:1px dashed var(--line);border-radius:99px;padding:5px 12px;margin-top:14px}
   .foot{margin-top:26px;font-size:12px;color:var(--ink-soft);line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
   .warn{font-size:12px;color:var(--warn);background:#fbf5e8;border:1px dashed #eadfc4;border-radius:10px;padding:10px 12px;margin-bottom:14px;display:none}
 </style>
@@ -66,6 +68,7 @@
 
   <div class="cards" id="cards"></div>
 
+  <span class="total" id="total"></span>
   <div class="foot" id="foot"></div>
 </div>
 
@@ -145,6 +148,26 @@ function renderFilters(){
   });
 }
 
+function initAnalytics(site){
+  var a = site.analytics || {};
+  if(!a.code) return;                       /* 코드가 없으면 아무것도 하지 않음 */
+  var s = document.createElement("script");
+  s.async = true;
+  s.src = "https://gc.zgo.at/count.js";
+  s.setAttribute("data-goatcounter", "https://" + a.code + ".goatcounter.com/count");
+  document.body.appendChild(s);
+  if(a.showTotal === false) return;          /* 숫자 노출만 끄고 집계는 유지 */
+  fetch("https://" + a.code + ".goatcounter.com/counter/TOTAL.json")
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || !d.count) return;
+      var t = document.getElementById("total");
+      t.textContent = "누적 조회 " + d.count + "회";
+      t.style.display = "inline-block";
+    })
+    .catch(function(){});                     /* 실패해도 페이지는 정상 동작 */
+}
+
 function boot(site, failed){
   if(failed) document.getElementById("warn").style.display = "block";
   renderHeader(site);
@@ -155,6 +178,7 @@ function boot(site, failed){
   });
   renderFilters();
   renderCards();
+  initAnalytics(site);
 }
 
 fetch("./site.json", { cache: "no-store" })
