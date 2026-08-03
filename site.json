@@ -3,7 +3,7 @@
   "analytics": {
     "provider": "goatcounter",
     "code": "minu",
-    "showTotal": true
+    "showTotal": false
   },
   "title": "부동산·청약 계산기 모음",
   "plate": "🧮 계산기 모음",
