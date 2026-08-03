@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>부동산·대출 정책 허브 — 내 대출 한도 계산기</title>
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --s1:#2f6d8f;--s2:#5a8fa8;--s3:#94b3c4;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:22px 0 18px;background:#ecebe4;padding:5px;border-radius:12px}
+  .tab{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:11.5px;padding:10px 2px;
+    border-radius:8px;color:var(--ink-soft);background:transparent;transition:all .18s ease}
+  .tab .n{display:block;font-size:9px;letter-spacing:.08em;opacity:.6;font-weight:800;margin-bottom:2px}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel[data-active="true"]{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  .card h2{font-size:15px;margin:0 0 12px;font-weight:800;letter-spacing:-.01em}
+  label.field{display:block;margin-bottom:16px}
+  label.field:last-child{margin-bottom:0}
+  .field .lab{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .stepper{display:flex;gap:8px;flex-wrap:wrap}
+  .stepper button{flex:1 1 44px;min-width:44px;cursor:pointer;border:1px solid var(--line);background:#fbfbf9;
+    border-radius:9px;font:inherit;font-weight:700;font-size:13px;padding:9px 4px;color:var(--ink);transition:all .15s ease}
+  .stepper button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  input[type=number]{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  input:focus,.stepper button:focus-visible,.tab:focus-visible,select:focus{outline:2px solid var(--seal);outline-offset:1px}
+  .inline{display:flex;align-items:center;gap:8px}
+  .inline input{text-align:right}
+  .unit{color:var(--ink-soft);font-weight:700;font-size:13px;white-space:nowrap}
+  .result{border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid var(--line);background:var(--card)}
+  .result .eyebrow{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--ink-soft);text-transform:uppercase}
+  .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+  .big small{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .verdict{font-size:14px;font-weight:700}
+  .verdict.ok{color:var(--ok)}.verdict.warn{color:var(--warn)}.verdict.no{color:var(--seal)}
+  .kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft);font-weight:600}.kv .v{font-weight:800;text-align:right}
+  .gate{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+  .grow{display:flex;align-items:center;gap:9px;font-size:13px}
+  .grow .gk{font-weight:700;flex:none;width:74px;color:var(--ink-soft)}
+  .grow .gbar{flex:1;height:9px;border-radius:99px;background:#ececec;overflow:hidden}
+  .grow .gbar>span{display:block;height:100%;border-radius:99px;background:var(--s3);transition:width .45s ease}
+  .grow.bind .gbar>span{background:var(--seal)}
+  .grow .gv{font-weight:800;flex:none;width:78px;text-align:right;font-size:12.5px}
+  .grow.bind .gv{color:var(--seal)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:99px;border:1px solid var(--line);color:var(--ink-soft);background:#fbfbf9}
+  .chip.fix{border-color:#cfe0d8;background:#eef6f2;color:var(--ok)}
+  .chip.plan{border-color:#eadfc4;background:#fbf5e8;color:var(--warn)}
+  .chip.check{border-color:#e6d6d3;background:var(--seal-soft);color:var(--seal)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{font-size:11.5px;color:var(--ink-soft);letter-spacing:.03em;font-weight:800;background:#fbfaf6}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+  .tl{display:flex;flex-direction:column;gap:0}
+  .tl .item{position:relative;padding:0 0 16px 20px;border-left:2px solid var(--line)}
+  .tl .item:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl .item::before{content:"";position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:99px;background:var(--seal);border:2px solid var(--paper)}
+  .tl .d{font-size:11.5px;font-weight:800;color:var(--ink-soft);letter-spacing:.04em}
+  .tl .t{font-size:14px;font-weight:800;margin:2px 0 5px}
+  .tl ul{margin:0;padding-left:16px}
+  .tl li{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-bottom:2px}
+  .loan{border:1px solid var(--line);border-radius:11px;padding:13px;margin-bottom:10px;background:#fbfbf9}
+  .loan.hit{border-color:var(--ok);background:#f4faf7}
+  .loan .lh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .loan .ln{font-weight:800;font-size:14px}
+  .loan .lt{font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;background:#ececec;color:var(--ink-soft);margin-left:auto}
+  .loan.hit .lt{background:#dcefe5;color:var(--ok)}
+  .loan .ld{font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+  .note{font-size:12px;color:var(--ink-soft);line-height:1.6}
+  .note strong{color:var(--ink)}
+  .asof{display:inline-block;font-size:11.5px;font-weight:800;color:var(--ink-soft);background:#fbfaf6;
+    border:1px dashed var(--line);border-radius:99px;padding:4px 11px;margin-top:10px}
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:#fbfaf6;border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+  .disclaimer b{color:var(--seal)}
+  .srcs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .srcs a{font-size:11.5px;font-weight:700;color:var(--s1);text-decoration:none;border-bottom:1px solid #cfe0e8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate">🏛️ 정책 허브</span>
+    <h1>지금 <span class="accent">얼마나 빌릴 수</span> 있나<br>규제 반영 계산기</h1>
+    <p class="sub">LTV · 한도 캡 · 스트레스 DSR을 한 번에 적용해 실제 대출 가능액을 계산합니다.</p>
+    <span class="asof" id="asOfBadge"></span>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="sum"><span class="n">1</span>요약</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="limit"><span class="n">2</span>대출한도</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="pay"><span class="n">3</span>상환</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="policy"><span class="n">4</span>정책대출</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="tax"><span class="n">5</span>세금</button>
+  </div>
+
+  <!-- TAB1 요약 -->
+  <section class="panel" data-tab="sum" data-active="true">
+    <div class="card">
+      <h2>한눈에 보는 3개 관문</h2>
+      <div class="note" style="margin-bottom:12px">대출 가능액은 아래 셋 중 <strong>가장 작은 값</strong>으로 정해집니다. 하나만 계산하면 실제보다 크게 나옵니다.</div>
+      <div class="kv"><span class="k">① LTV</span><span class="v" id="sumLtv"></span></div>
+      <div class="kv"><span class="k">② 한도 캡</span><span class="v" id="sumCap"></span></div>
+      <div class="kv"><span class="k">③ DSR</span><span class="v" id="sumDsr"></span></div>
+    </div>
+    <div class="card">
+      <h2>대책 타임라인</h2>
+      <div class="tl" id="timeline"></div>
+      <div class="chips">
+        <span class="chip fix">확정 = 시행 중</span>
+        <span class="chip plan">예고 = 발표·미시행</span>
+        <span class="chip check">확인 = 재확인 필요</span>
+      </div>
+    </div>
+    <div class="card">
+      <h2>이것만은 헷갈리지 마세요</h2>
+      <div class="note">
+        <p style="margin:0 0 10px"><strong>스트레스 금리는 실제로 내는 이자가 아닙니다.</strong> 한도를 보수적으로 잡기 위해 심사에서만 얹는 가상 금리예요. 월 상환액은 실제 약정 금리로 계산합니다.</p>
+        <p style="margin:0 0 10px"><strong>기존 대출이 한도를 깎습니다.</strong> 자동차 할부·마이너스통장·신용대출 원리금이 전부 DSR에 들어갑니다.</p>
+        <p style="margin:0"><strong>발표 ≠ 시행.</strong> 세제개편안처럼 국회 통과가 남은 항목은 아직 적용되지 않습니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB2 대출한도 -->
+  <section class="panel" data-tab="limit">
+    <div class="card">
+      <label class="field">
+        <span class="lab">지역 <span class="hint">(규제 강도가 완전히 다릅니다)</span></span>
+        <div class="stepper" id="regionSel"></div>
+      </label>
+      <label class="field">
+        <span class="lab">주택 보유 상황</span>
+        <div class="stepper" id="ownerSel"></div>
+      </label>
+      <label class="field">
+        <span class="lab">주택 가격 <span class="hint">(시가 기준)</span></span>
+        <div class="inline"><input type="number" id="price" inputmode="numeric" value="90000" step="1000"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="card">
+      <label class="field">
+        <span class="lab">부부합산 연소득 <span class="hint">(세전)</span></span>
+        <div class="inline"><input type="number" id="income" inputmode="numeric" value="8000" step="100"><span class="unit">만원 / 년</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">기존 대출 연 원리금 <span class="hint">(신용·할부·마통 전부)</span></span>
+        <div class="inline"><input type="number" id="existing" inputmode="numeric" value="0" step="50"><span class="unit">만원 / 년</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">금리 유형 <span class="hint">(스트레스 반영 비율이 다릅니다)</span></span>
+        <div class="stepper" id="rateTypeSel"></div>
+      </label>
+      <label class="field">
+        <span class="lab">약정 금리</span>
+        <div class="inline"><input type="number" id="rate" inputmode="decimal" value="4.3" step="0.1"><span class="unit">% / 년</span></div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">대출 기간</span>
+        <div class="stepper" id="termSel"></div>
+      </label>
+    </div>
+    <div class="result" id="limitResult"></div>
+    <div class="card">
+      <h2>어디에 걸렸나</h2>
+      <div class="gate" id="gates"></div>
+      <div class="note" style="margin-top:14px" id="gateNote"></div>
+    </div>
+  </section>
+
+  <!-- TAB3 상환 -->
+  <section class="panel" data-tab="pay">
+    <div class="result" id="payResult"></div>
+    <div class="card">
+      <h2>필요한 현금</h2>
+      <div id="cashRows"></div>
+      <div class="note" style="margin-top:12px">중개보수·법무비·이사비는 포함하지 않았습니다. 통상 주택가격의 0.5~1%를 추가로 잡으세요.</div>
+    </div>
+    <div class="card">
+      <h2>금리가 오르면</h2>
+      <table id="rateScenario"></table>
+      <div class="note" style="margin-top:10px">변동금리라면 실제로 겪을 수 있는 구간입니다. 스트레스 DSR이 존재하는 이유이기도 합니다.</div>
+    </div>
+  </section>
+
+  <!-- TAB4 정책대출 -->
+  <section class="panel" data-tab="policy">
+    <div class="card">
+      <h2>입력값 기준 간이 판정</h2>
+      <div class="note">2번 탭에 넣은 소득·주택가격으로 1차 판정만 합니다. 무주택 여부·자산·혼인·자녀 요건은 별도 확인이 필요합니다.</div>
+      <div class="chips" id="policyInputs" style="margin-top:12px"></div>
+    </div>
+    <div id="policyLoans"></div>
+    <div class="card">
+      <div class="note"><strong>자격이 돼도 재원이 소진되면 못 받습니다.</strong> 정책대출은 연간 공급 총량이 관리되고 있어, 하반기로 갈수록 조기 마감되는 경우가 있습니다. 조건이 맞으면 서두르는 편이 안전합니다.</div>
+    </div>
+  </section>
+
+  <!-- TAB5 세금 -->
+  <section class="panel" data-tab="tax">
+    <div class="card">
+      <h2>취득세 (매수 시 1회)</h2>
+      <label class="field">
+        <span class="lab">전용면적</span>
+        <div class="stepper" id="areaSel"></div>
+      </label>
+      <div id="acqResult"></div>
+      <div class="note" style="margin-top:12px">지방교육세·농어촌특별세를 포함한 개략치입니다. 다주택·조정대상지역 중과, 생애최초 감면 등은 개별 확인이 필요합니다.</div>
+    </div>
+    <div class="card">
+      <h2>보유세 — 종부세 대상인가요?</h2>
+      <div id="hold"></div>
+    </div>
+    <div class="card">
+      <h2>현행 vs 발표안</h2>
+      <table id="taxTable"></table>
+      <div class="note" style="margin-top:10px" id="taxNote"></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="disclaimer">
+      <b>참고용 계산기입니다.</b> 공개된 정책 자료를 바탕으로 한 개략 계산이며, 실제 한도·금리·세액은 금융기관 심사와 개별 요건에 따라 달라집니다.
+      정책은 대책 발표로 즉시 바뀝니다. 실행 전 반드시 공식 자료와 금융기관에서 재확인하세요.
+    </div>
+    <div class="srcs" id="sources"></div>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   POLICY — 여기만 갱신하면 됩니다.
+   금액은 전부 원(₩) 단위 정수. 비율은 소수(0.4 = 40%).
+   status: "확정"(시행 중) / "예고"(발표·미시행) / "확인"(재확인 필요)
+   ============================================================ */
+const POLICY = {
+  asOf: "2026-08-03",
+
+  timeline: [
+    { date: "2026.08.03", name: "2026 세제개편안 확정·의결", tag: "예고", points: [
+      "양도세 장특공제: 보유공제 → 거주공제 전환, 거주공제 한도 10억 신설",
+      "종부세: 주택 수 대신 가액 기준으로 세율 일원화, 공정시장가액비율 단계 상향",
+      "시가 40억(공시 약 28억) 이상 초고가 주택에 집중 — 상위 0.4% 수준",
+      "입법예고·국회 제출 단계. 종부세 2027~2028년, 양도세 2028년 단계 시행 예정"
+    ]},
+    { date: "2026.06.30", name: "규제지역 추가 지정", tag: "확정", points: [
+      "화성 동탄구·용인 기흥구·구리시가 규제지역·토지거래허가구역에 추가 (2026.7.1 적용)",
+      "해당 지역 무주택자 LTV 70% → 40%로 강화",
+      "1억원 초과 신용대출 차주는 해당 지역 주택 구입에 제한"
+    ]},
+    { date: "2026.01.29", name: "1·29 도심 주택공급 방안", tag: "확정", points: [
+      "수도권 약 6만호 (서울 3.2만 / 경기 2.8만)",
+      "용산 약 1.35만호, 과천 9,800호, 성남 6,300호, 노원 태릉CC 등",
+      "착공 목표 2027~2028년 — 당장의 입주 물량은 아님"
+    ]},
+    { date: "2026.01", name: "금융·거래 규제 조기 시행", tag: "확정", points: [
+      "은행권 주담대 위험가중치 하한 15% → 20% (4월 예정에서 앞당김)",
+      "자금조달계획서에 가상자산 매각대금 항목 신설, 계약금 입금 증빙 의무화",
+      "제출 의무 대상이 토지거래허가구역까지 확대"
+    ]},
+    { date: "2025.10.15", name: "10·15 주택시장 안정화 대책", tag: "확정", points: [
+      "서울 전역·경기 상당 지역으로 조정대상지역·투기과열지구·토지거래허가구역 확대",
+      "주담대 한도를 시가별 차등화 (15억 초과 4억 / 25억 초과 2억)",
+      "수도권·규제지역 주담대 스트레스 금리 3.0%로 상향",
+      "1주택자의 수도권 규제지역 전세대출 이자상환분을 DSR에 반영"
+    ]},
+    { date: "2025.07.01", name: "스트레스 DSR 3단계 시행", tag: "확정", points: [
+      "전 금융권 가계대출에 스트레스 금리 적용",
+      "금리 유형별 반영 비율 차등 (변동 > 혼합 > 주기형)"
+    ]},
+    { date: "2025.06.27", name: "6·27 가계부채 관리 강화", tag: "확정", points: [
+      "수도권·규제지역 주택구입 목적 주담대 한도 6억원 도입",
+      "정책대출 포함 가계대출 총량 관리 강화"
+    ]}
+  ],
+
+  /* 지역별 규제. verify:true면 화면에 '확인' 칩이 붙습니다. */
+  regions: [
+    { id:"metroReg", label:"수도권 규제지역", desc:"서울 전역 및 경기 대부분",
+      ltv:{ first:0.70, none:0.40, one:0.40, multi:0.00 }, stressBase:3.0, verify:false,
+      cap:[ {upTo:1500000000, amount:600000000}, {upTo:2500000000, amount:400000000}, {upTo:Infinity, amount:200000000} ],
+      note:"생애최초는 규제지역에서도 LTV 70%가 유지되지만, 스트레스 금리가 3.0%로 올라 실제 한도는 줄어듭니다. 1주택자는 기존 주택 처분 조건이 붙고, 다주택자는 수도권 주택 구입 목적 주담대가 나오지 않습니다." },
+    { id:"metroNon", label:"수도권 비규제", desc:"규제지역으로 지정되지 않은 수도권",
+      ltv:{ first:0.70, none:0.70, one:0.60, multi:0.00 }, stressBase:1.5, verify:true,
+      cap:[ {upTo:1500000000, amount:600000000}, {upTo:2500000000, amount:400000000}, {upTo:Infinity, amount:200000000} ],
+      note:"수도권은 규제지역이 아니어도 주택구입 목적 주담대 한도 캡이 적용되고, 다주택자는 규제지역 여부와 무관하게 대출이 막힙니다. 지정 현황은 수시로 바뀌니 토지이음·국토부 공고로 확인하세요." },
+    { id:"local", label:"지방", desc:"수도권 외 지역",
+      ltv:{ first:0.70, none:0.70, one:0.60, multi:null }, stressBase:1.5, verify:true,
+      cap:[],
+      note:"지방 주담대는 스트레스 금리 한시 완화가 적용된 시기가 있었습니다. 현재 적용 수준은 금융위 공지로 확인하세요." }
+  ],
+
+  owners: [
+    { id:"first", label:"생애최초", desc:"세대원 전원 주택 취득 이력 없음" },
+    { id:"none",  label:"무주택",   desc:"현재 무주택 세대" },
+    { id:"one",   label:"1주택",    desc:"기존 주택 처분 조건부" },
+    { id:"multi", label:"다주택",   desc:"2주택 이상 보유" }
+  ],
+
+  dsr: {
+    bank: 0.40,
+    nonbank: 0.50,
+    /* 스트레스 금리 반영 비율 (금리 유형별) */
+    rateTypes: [
+      { id:"variable", label:"변동", ratio:1.0 },
+      { id:"mixed",    label:"혼합형", ratio:0.6 },
+      { id:"periodic", label:"주기형", ratio:0.3 }
+    ]
+  },
+
+  terms: [20, 30, 40],
+
+  /* 정책대출. 확인 못 한 값은 null로 두면 화면에 '공식 확인'으로 표시됩니다. */
+  policyLoans: [
+    { name:"내집마련 디딤돌대출", purpose:"주택 구입",
+      income:null, priceCap:null, limit:null, rate:null, status:"확인",
+      note:"소득·자산 요건과 한도(일반/신혼/신생아별 상이)를 주택도시기금 공식 페이지에서 확인해 채우세요." },
+    { name:"버팀목 전세자금대출", purpose:"전세 보증금",
+      income:null, priceCap:null, limit:null, rate:null, status:"확인",
+      note:"청년·신혼·신생아 유형별로 보증금 상한과 한도가 다릅니다." },
+    { name:"신생아 특례대출", purpose:"주택 구입 / 전세",
+      income:null, priceCap:null, limit:null, rate:null, status:"확인",
+      note:"2026년 소득요건이 크게 완화된 것으로 알려져 있습니다. 특례금리 적용 기간과 종료 후 전환금리까지 함께 확인하세요." }
+  ],
+
+  tax: {
+    /* 취득세: 1주택 기준 표준세율 + 부가세(지방교육세·농특세) 개략 */
+    acquisition: [
+      { upTo: 600000000,  rate:0.01, label:"6억 이하" },
+      { upTo: 900000000,  rate:"prog", label:"6억 초과 ~ 9억 이하 (누진)" },
+      { upTo: Infinity,   rate:0.03, label:"9억 초과" }
+    ],
+    eduRateOf: 0.1,      /* 지방교육세 = 취득세율 × 이 비율 (개략) */
+    farmRateLarge: 0.002, /* 전용 85㎡ 초과 농어촌특별세 */
+    multiHomeNote:"조정대상지역 2주택 8%, 3주택 이상·법인 12% 중과가 적용될 수 있습니다.",
+
+    /* 종부세 1주택 기준 (공시가격) */
+    holding: {
+      current:  { deduction: 1200000000, label:"현행", status:"확정" },
+      proposed: { deductionResident: 1400000000, deductionNonResident: 900000000,
+                  threshold: 1400000000, pinpoint: 2800000000, label:"발표안", status:"예고" },
+      fairRatio: { current:0.60, proposed:"2027년 70% → 2028년 이후 최대 80%" }
+    },
+
+    compare: [
+      { item:"종부세 기본공제 (1주택)", now:"12억원", plan:"거주 14억 / 비거주 9억" },
+      { item:"공정시장가액비율", now:"60%", plan:"2027년 70% → 3주택 이상 2028년 80%" },
+      { item:"과표 6~12억 세율", now:"1.0%", plan:"1.3%" },
+      { item:"양도세 장특공제 (1주택)", now:"보유 연4% + 거주 연4%", plan:"거주 연8% (2029~), 한도 10억" },
+      { item:"양도세 장특공제 (다주택)", now:"보유 연2%", plan:"거주 연2%" },
+      { item:"다주택 양도세 중과", now:"2026.5.10 재개 (시행 중)", plan:"—" }
+    ],
+    note:"발표안은 입법예고·국회 심의가 남아 있어 확정된 제도가 아닙니다. 종부세는 2027~2028년, 양도세는 1년 유예 후 2028년부터 단계 시행이 예고돼 있습니다."
+  },
+
+  sources: [
+    { label:"정책브리핑", url:"https://www.korea.kr" },
+    { label:"국토교통부", url:"https://www.molit.go.kr" },
+    { label:"금융위원회", url:"https://www.fsc.go.kr" },
+    { label:"주택도시기금", url:"https://nhuf.molit.go.kr" },
+    { label:"토지이음", url:"https://www.eum.go.kr" }
+  ]
+};
+
+/* ============================================================
+   로직 — 아래는 수정하지 마세요.
+   ============================================================ */
+const $ = s => document.querySelector(s);
+const el = (t, c, h) => { const n = document.createElement(t); if(c) n.className = c; if(h!=null) n.innerHTML = h; return n; };
+
+function won(v){
+  if(v==null || !isFinite(v)) return "—";
+  v = Math.max(0, Math.round(v));
+  const eok = Math.floor(v/100000000);
+  const man = Math.round((v%100000000)/10000);
+  if(eok && man) return eok + "억 " + man.toLocaleString() + "만원";
+  if(eok) return eok + "억원";
+  return man.toLocaleString() + "만원";
+}
+function manToWon(v){ return (Number(v)||0) * 10000; }
+
+/* 원리금균등: 월 상환액 */
+function pmt(principal, monthlyRate, months){
+  if(months<=0) return 0;
+  if(monthlyRate<=0) return principal/months;
+  const f = Math.pow(1+monthlyRate, months);
+  return principal * monthlyRate * f / (f-1);
+}
+/* 원리금균등: 월 상환액으로 감당 가능한 원금 */
+function pv(payment, monthlyRate, months){
+  if(months<=0) return 0;
+  if(monthlyRate<=0) return payment*months;
+  const f = Math.pow(1+monthlyRate, months);
+  return payment * (f-1) / (monthlyRate * f);
+}
+
+const state = {
+  region: POLICY.regions[0].id,
+  owner: POLICY.owners[0].id,
+  rateType: POLICY.dsr.rateTypes[0].id,
+  term: String(POLICY.terms.length>1 ? POLICY.terms[1] : POLICY.terms[0]),
+  area: "small"
+};
+
+function buildStepper(mount, items, key, onPick){
+  const box = $(mount); if(!box) return;
+  box.innerHTML = "";
+  items.forEach(it => {
+    const b = el("button", null, it.label);
+    b.dataset.v = it.id;
+    b.setAttribute("aria-pressed", String(state[key] === it.id));
+    b.addEventListener("click", () => {
+      state[key] = it.id;
+      [...box.children].forEach(c => c.setAttribute("aria-pressed", String(c.dataset.v === it.id)));
+      if(onPick) onPick();
+      render();
+    });
+    box.appendChild(b);
+  });
+}
+
+function currentRegion(){ return POLICY.regions.find(r => r.id === state.region); }
+
+function capFor(region, price){
+  if(!region.cap || !region.cap.length) return null;
+  for(const c of region.cap){ if(price <= c.upTo) return c.amount; }
+  return region.cap[region.cap.length-1].amount;
+}
+
+function compute(){
+  const region = currentRegion();
+  const price = manToWon($("#price").value);
+  const income = manToWon($("#income").value);
+  const existing = manToWon($("#existing").value);
+  const rate = Number($("#rate").value) || 0;
+  const rt = POLICY.dsr.rateTypes.find(r => r.id === state.rateType);
+  const months = Number(state.term) * 12;
+
+  const ltvPct = region.ltv[state.owner];
+  const ltvKnown = ltvPct != null;
+  const ltvLimit = ltvKnown ? price * ltvPct : Infinity;
+  const capLimit = capFor(region, price);
+
+  const stress = region.stressBase * rt.ratio;
+  const stressedRate = rate + stress;
+  const annualRoom = Math.max(0, income * POLICY.dsr.bank - existing);
+  const dsrLimit = pv(annualRoom/12, stressedRate/100/12, months);
+
+  const candidates = [
+    { key:"ltv", label: ltvKnown ? "LTV " + Math.round(ltvPct*100) + "%" : "LTV 확인필요", value: ltvLimit },
+    { key:"dsr", label:"DSR " + Math.round(POLICY.dsr.bank*100) + "%", value: dsrLimit }
+  ];
+  if(capLimit != null) candidates.splice(1, 0, { key:"cap", label:"한도 캡", value: capLimit });
+
+  const final = Math.min(...candidates.map(c => c.value));
+  const binding = candidates.filter(c => Math.abs(c.value - final) < 1000);
+
+  return { region, price, income, existing, rate, rt, months, ltvPct, ltvKnown, ltvLimit,
+           capLimit, stress, stressedRate, annualRoom, dsrLimit, candidates, final, binding };
+}
+
+function renderSummary(){
+  $("#asOfBadge").textContent = "기준일 " + POLICY.asOf.replace(/-/g, ".") + " · 이후 변경 가능";
+  const c = compute();
+  $("#sumLtv").textContent = c.ltvKnown ? "주택가격 × " + Math.round(c.ltvPct*100) + "%" : "지역·자격별 확인 필요";
+  $("#sumCap").textContent = c.capLimit != null ? "시가별 상한 " + won(c.capLimit) : "해당 없음";
+  $("#sumDsr").textContent = "연소득 × " + Math.round(POLICY.dsr.bank*100) + "% (+스트레스 " + c.stress.toFixed(1) + "%p)";
+
+  const tl = $("#timeline"); tl.innerHTML = "";
+  POLICY.timeline.forEach(t => {
+    const item = el("div", "item");
+    const cls = t.tag === "확정" ? "fix" : (t.tag === "예고" ? "plan" : "check");
+    item.appendChild(el("div", "d", t.date + " · <span class='chip " + cls + "' style='padding:1px 7px'>" + t.tag + "</span>"));
+    item.appendChild(el("div", "t", t.name));
+    const ul = el("ul");
+    t.points.forEach(p => ul.appendChild(el("li", null, p)));
+    item.appendChild(ul);
+    tl.appendChild(item);
+  });
+}
+
+function renderLimit(){
+  const c = compute();
+  const r = $("#limitResult");
+  const pct = c.price > 0 ? Math.round(c.final / c.price * 100) : 0;
+  r.innerHTML =
+    "<div class='eyebrow'>예상 최대 대출</div>" +
+    "<div class='big'>" + won(c.final) + " <small>· 주택가격의 " + pct + "%</small></div>" +
+    "<div class='verdict " + (c.final <= 0 ? "no" : "ok") + "'>" +
+      (c.final <= 0 ? "현재 조건으로는 대출이 어렵습니다" : c.binding.map(b => b.label).join(" · ") + "에 걸려 결정") +
+    "</div>" +
+    "<div class='kv' style='margin-top:12px'><span class='k'>필요 자기자금(취득세 제외)</span><span class='v'>" + won(Math.max(0, c.price - c.final)) + "</span></div>" +
+    "<div class='kv'><span class='k'>한도 산정용 금리</span><span class='v'>" + c.rate.toFixed(1) + "% + 스트레스 " + c.stress.toFixed(1) + "%p = " + c.stressedRate.toFixed(1) + "%</span></div>";
+
+  const g = $("#gates"); g.innerHTML = "";
+  const max = Math.max(...c.candidates.map(x => x.value).filter(v => isFinite(v)), 1);
+  c.candidates.forEach(x => {
+    const bind = Math.abs(x.value - c.final) < 1000;
+    const row = el("div", "grow" + (bind ? " bind" : ""));
+    row.appendChild(el("span", "gk", x.label));
+    const bar = el("span", "gbar", "<span style='width:" + Math.min(100, x.value/max*100) + "%'></span>");
+    row.appendChild(bar);
+    row.appendChild(el("span", "gv", won(x.value)));
+    g.appendChild(row);
+  });
+
+  let note = "<strong>" + c.region.label + "</strong> · " + c.region.desc + "<br>" + c.region.note;
+  if(c.region.verify) note += "<br><span class='chip check' style='margin-top:6px;display:inline-block'>이 지역 수치는 재확인 권장</span>";
+  if(c.ltvKnown && c.ltvPct === 0) note += "<br><br>이 조건에서는 주택 구입 목적 주담대가 나오지 않는 것으로 계산됩니다.";
+  if(!c.ltvKnown) note += "<br><br>이 조건의 LTV는 확정하지 못해 계산에서 제외했습니다. 실제 한도는 더 낮을 수 있으니 금융기관에 확인하세요.";
+  $("#gateNote").innerHTML = note;
+}
+
+function renderPay(){
+  const c = compute();
+  const mRate = c.rate/100/12;
+  const monthly = pmt(c.final, mRate, c.months);
+  const total = monthly * c.months;
+  const interest = total - c.final;
+  const dsrActual = c.income > 0 ? (monthly*12 + c.existing) / c.income * 100 : 0;
+
+  $("#payResult").innerHTML =
+    "<div class='eyebrow'>월 상환액 (원리금균등 · 실제 금리 기준)</div>" +
+    "<div class='big'>" + Math.round(monthly/10000).toLocaleString() + "만원 <small>/ 월</small></div>" +
+    "<div class='verdict " + (dsrActual > 40 ? "warn" : "ok") + "'>실제 DSR 약 " + dsrActual.toFixed(1) + "% · 소득 대비 원리금 비중</div>" +
+    "<div class='kv' style='margin-top:12px'><span class='k'>대출 원금</span><span class='v'>" + won(c.final) + "</span></div>" +
+    "<div class='kv'><span class='k'>총 이자 (" + state.term + "년)</span><span class='v'>" + won(interest) + "</span></div>" +
+    "<div class='kv'><span class='k'>총 상환액</span><span class='v'>" + won(total) + "</span></div>";
+
+  const acq = acquisitionTax(c.price);
+  const rows = [
+    ["주택 가격", won(c.price)],
+    ["대출", "− " + won(c.final)],
+    ["취득세 등", "+ " + won(acq.total)],
+    ["필요 현금 합계", won(c.price - c.final + acq.total)]
+  ];
+  $("#cashRows").innerHTML = rows.map((r,i) =>
+    "<div class='kv'><span class='k'>" + r[0] + "</span><span class='v'" + (i===rows.length-1 ? " style='color:var(--seal)'" : "") + ">" + r[1] + "</span></div>"
+  ).join("");
+
+  let html = "<tr><th>금리</th><th class='num'>월 상환액</th><th class='num'>현재 대비</th></tr>";
+  [0, 1, 2, 3].forEach(d => {
+    const m = pmt(c.final, (c.rate+d)/100/12, c.months);
+    html += "<tr><td>" + (c.rate+d).toFixed(1) + "%</td>" +
+            "<td class='num'>" + Math.round(m/10000).toLocaleString() + "만원</td>" +
+            "<td class='num'>" + (d===0 ? "—" : "+" + Math.round((m-monthly)/10000).toLocaleString() + "만원") + "</td></tr>";
+  });
+  $("#rateScenario").innerHTML = html;
+}
+
+function renderPolicyLoans(){
+  const c = compute();
+  $("#policyInputs").innerHTML =
+    "<span class='chip'>연소득 " + Math.round(c.income/10000).toLocaleString() + "만원</span>" +
+    "<span class='chip'>주택가격 " + won(c.price) + "</span>";
+
+  const box = $("#policyLoans"); box.innerHTML = "";
+  POLICY.policyLoans.forEach(l => {
+    let verdict = "공식 확인", hit = false;
+    if(l.income != null && l.priceCap != null){
+      const okI = c.income <= l.income, okP = c.price <= l.priceCap;
+      hit = okI && okP;
+      verdict = hit ? "요건 충족 가능" : (!okI ? "소득 초과" : "주택가격 초과");
+    }
+    const card = el("div", "loan" + (hit ? " hit" : ""));
+    card.innerHTML =
+      "<div class='lh'><span class='ln'>" + l.name + "</span><span class='lt'>" + verdict + "</span></div>" +
+      "<div class='ld'>" +
+        "용도 " + l.purpose + "<br>" +
+        "소득요건 " + (l.income != null ? won(l.income) + " 이하" : "확인 필요") + " · " +
+        "주택가격 " + (l.priceCap != null ? won(l.priceCap) + " 이하" : "확인 필요") + "<br>" +
+        "한도 " + (l.limit != null ? won(l.limit) : "확인 필요") + " · 금리 " + (l.rate != null ? l.rate : "확인 필요") + "<br>" +
+        (l.note ? "<span style='opacity:.85'>" + l.note + "</span>" : "") +
+      "</div>";
+    box.appendChild(card);
+  });
+}
+
+function acquisitionTax(price){
+  let rate = 0, label = "";
+  for(const b of POLICY.tax.acquisition){
+    if(price <= b.upTo){
+      label = b.label;
+      if(b.rate === "prog"){
+        const eok = price/100000000;
+        rate = Math.max(0.01, Math.min(0.03, (eok*2/3 - 3)/100));
+      } else rate = b.rate;
+      break;
+    }
+  }
+  const base = price * rate;
+  const edu = base * POLICY.tax.eduRateOf;
+  const farm = state.area === "large" ? price * POLICY.tax.farmRateLarge : 0;
+  return { rate, label, base, edu, farm, total: base + edu + farm };
+}
+
+function renderTax(){
+  const c = compute();
+  const a = acquisitionTax(c.price);
+  $("#acqResult").innerHTML =
+    "<div class='kv'><span class='k'>구간</span><span class='v'>" + a.label + " · " + (a.rate*100).toFixed(2) + "%</span></div>" +
+    "<div class='kv'><span class='k'>취득세</span><span class='v'>" + won(a.base) + "</span></div>" +
+    "<div class='kv'><span class='k'>지방교육세</span><span class='v'>" + won(a.edu) + "</span></div>" +
+    (a.farm ? "<div class='kv'><span class='k'>농어촌특별세</span><span class='v'>" + won(a.farm) + "</span></div>" : "") +
+    "<div class='kv'><span class='k'>합계</span><span class='v' style='color:var(--seal)'>" + won(a.total) + "</span></div>" +
+    "<div class='note' style='margin-top:10px'>" + POLICY.tax.multiHomeNote + "</div>";
+
+  const h = POLICY.tax.holding;
+  const pub = c.price * 0.7; /* 공시가격 개략 = 시가의 70% 가정 */
+  const nowTaxed = pub > h.current.deduction;
+  const planTaxed = pub > h.proposed.threshold;
+  const pinpoint = pub > h.proposed.pinpoint;
+  $("#hold").innerHTML =
+    "<div class='kv'><span class='k'>공시가격 추정 <span class='hint'>(시가의 70% 가정)</span></span><span class='v'>" + won(pub) + "</span></div>" +
+    "<div class='kv'><span class='k'>현행 기준 (공제 " + won(h.current.deduction) + ")</span><span class='v' style='color:" + (nowTaxed ? "var(--seal)" : "var(--ok)") + "'>" + (nowTaxed ? "과세 대상" : "대상 아님") + "</span></div>" +
+    "<div class='kv'><span class='k'>발표안 기준 (거주 1주택 " + won(h.proposed.threshold) + ")</span><span class='v' style='color:" + (planTaxed ? "var(--seal)" : "var(--ok)") + "'>" + (planTaxed ? "과세 대상" : "대상 아님") + "</span></div>" +
+    "<div class='kv'><span class='k'>초고가 핀셋 구간 (공시 " + won(h.proposed.pinpoint) + " 초과)</span><span class='v'>" + (pinpoint ? "해당" : "해당 없음") + "</span></div>" +
+    "<div class='note' style='margin-top:10px'>실제 공시가격은 단지·동·호별로 다릅니다. 부동산공시가격 알리미에서 확인하세요. 세액은 공정시장가액비율(현행 " + Math.round(h.fairRatio.current*100) + "%, 발표안 " + h.fairRatio.proposed + ")과 세율·연령·보유기간 공제에 따라 달라집니다.</div>";
+
+  let t = "<tr><th>항목</th><th>현행 (시행 중)</th><th>발표안 (미시행)</th></tr>";
+  POLICY.tax.compare.forEach(r => {
+    t += "<tr><td>" + r.item + "</td><td>" + r.now + "</td><td>" + r.plan + "</td></tr>";
+  });
+  $("#taxTable").innerHTML = t;
+  $("#taxNote").textContent = POLICY.tax.note;
+}
+
+function render(){
+  renderSummary();
+  renderLimit();
+  renderPay();
+  renderPolicyLoans();
+  renderTax();
+}
+
+/* 초기화 */
+buildStepper("#regionSel", POLICY.regions.map(r => ({id:r.id, label:r.label})), "region");
+buildStepper("#ownerSel", POLICY.owners, "owner");
+buildStepper("#rateTypeSel", POLICY.dsr.rateTypes, "rateType");
+buildStepper("#termSel", POLICY.terms.map(t => ({id:String(t), label:t+"년"})), "term");
+buildStepper("#areaSel", [{id:"small", label:"85㎡ 이하"}, {id:"large", label:"85㎡ 초과"}], "area");
+
+["#price", "#income", "#existing", "#rate"].forEach(s => $(s).addEventListener("input", render));
+
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x === t)));
+    document.querySelectorAll(".panel").forEach(p => p.dataset.active = String(p.dataset.tab === t.dataset.tab));
+  });
+});
+
+$("#sources").innerHTML = POLICY.sources.map(s => "<a href='" + s.url + "' target='_blank' rel='noopener'>" + s.label + "</a>").join("");
+
+render();
+</script>
+</body>
+</html>
