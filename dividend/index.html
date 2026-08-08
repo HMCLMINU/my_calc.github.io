@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>배당소득 분리과세 계산기 — 종합과세와 어느 쪽이 유리한가</title>
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --s1:#2f6d8f;--s2:#5a8fa8;--s3:#94b3c4;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:22px 0 18px;background:#ecebe4;padding:5px;border-radius:12px}
+  .tab{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:11.5px;padding:10px 2px;
+    border-radius:8px;color:var(--ink-soft);background:transparent;transition:all .18s ease}
+  .tab .n{display:block;font-size:9px;letter-spacing:.08em;opacity:.6;font-weight:800;margin-bottom:2px}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel[data-active="true"]{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  .card h2{font-size:15px;margin:0 0 12px;font-weight:800;letter-spacing:-.01em}
+  label.field{display:block;margin-bottom:16px}
+  label.field:last-child{margin-bottom:0}
+  .field .lab{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .stepper{display:flex;gap:8px;flex-wrap:wrap}
+  .stepper button{flex:1 1 44px;min-width:44px;cursor:pointer;border:1px solid var(--line);background:#fbfbf9;
+    border-radius:9px;font:inherit;font-weight:700;font-size:13px;padding:9px 4px;color:var(--ink);transition:all .15s ease}
+  .stepper button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  input[type=number]{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  input:focus,.stepper button:focus-visible,.tab:focus-visible,select:focus{outline:2px solid var(--seal);outline-offset:1px}
+  .inline{display:flex;align-items:center;gap:8px}
+  .inline input{text-align:right}
+  .unit{color:var(--ink-soft);font-weight:700;font-size:13px;white-space:nowrap}
+  .result{border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid var(--line);background:var(--card)}
+  .result .eyebrow{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--ink-soft);text-transform:uppercase}
+  .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+  .big small{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .verdict{font-size:14px;font-weight:700}
+  .verdict.ok{color:var(--ok)}.verdict.warn{color:var(--warn)}.verdict.no{color:var(--seal)}
+  .kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft);font-weight:600}.kv .v{font-weight:800;text-align:right}
+  .gate{display:flex;flex-direction:column;gap:9px;margin-top:14px}
+  .grow{display:flex;align-items:center;gap:9px;font-size:13px}
+  .grow .gk{font-weight:700;flex:none;width:74px;color:var(--ink-soft)}
+  .grow .gbar{flex:1;height:9px;border-radius:99px;background:#ececec;overflow:hidden}
+  .grow .gbar>span{display:block;height:100%;border-radius:99px;background:var(--s3);transition:width .45s ease}
+  .grow.bind .gbar>span{background:var(--seal)}
+  .grow .gv{font-weight:800;flex:none;width:78px;text-align:right;font-size:12.5px}
+  .grow.bind .gv{color:var(--seal)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:99px;border:1px solid var(--line);color:var(--ink-soft);background:#fbfbf9}
+  .chip.fix{border-color:#cfe0d8;background:#eef6f2;color:var(--ok)}
+  .chip.plan{border-color:#eadfc4;background:#fbf5e8;color:var(--warn)}
+  .chip.check{border-color:#e6d6d3;background:var(--seal-soft);color:var(--seal)}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{font-size:11.5px;color:var(--ink-soft);letter-spacing:.03em;font-weight:800;background:#fbfaf6}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:700}
+  .tl{display:flex;flex-direction:column;gap:0}
+  .tl .item{position:relative;padding:0 0 16px 20px;border-left:2px solid var(--line)}
+  .tl .item:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl .item::before{content:"";position:absolute;left:-6px;top:4px;width:10px;height:10px;border-radius:99px;background:var(--seal);border:2px solid var(--paper)}
+  .tl .d{font-size:11.5px;font-weight:800;color:var(--ink-soft);letter-spacing:.04em}
+  .tl .t{font-size:14px;font-weight:800;margin:2px 0 5px}
+  .tl ul{margin:0;padding-left:16px}
+  .tl li{font-size:12.5px;color:var(--ink-soft);line-height:1.6;margin-bottom:2px}
+  .loan{border:1px solid var(--line);border-radius:11px;padding:13px;margin-bottom:10px;background:#fbfbf9}
+  .loan.hit{border-color:var(--ok);background:#f4faf7}
+  .loan .lh{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .loan .ln{font-weight:800;font-size:14px}
+  .loan .lt{font-size:11px;font-weight:800;padding:2px 7px;border-radius:99px;background:#ececec;color:var(--ink-soft);margin-left:auto}
+  .loan.hit .lt{background:#dcefe5;color:var(--ok)}
+  .loan .ld{font-size:12.5px;color:var(--ink-soft);line-height:1.6}
+  .note{font-size:12px;color:var(--ink-soft);line-height:1.6}
+  .note strong{color:var(--ink)}
+  .asof{display:inline-block;font-size:11.5px;font-weight:800;color:var(--ink-soft);background:#fbfaf6;
+    border:1px dashed var(--line);border-radius:99px;padding:4px 11px;margin-top:10px}
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:#fbfaf6;border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+  .disclaimer b{color:var(--seal)}
+  .srcs{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .srcs a{font-size:11.5px;font-weight:700;color:var(--s1);text-decoration:none;border-bottom:1px solid #cfe0e8}
+
+  .tabs{grid-template-columns:repeat(4,1fr)}
+  .diffbar{display:flex;align-items:center;gap:9px;font-size:13px;margin-bottom:9px}
+  .diffbar .dk{font-weight:700;flex:none;width:88px;color:var(--ink-soft)}
+  .diffbar .db{flex:1;height:10px;border-radius:99px;background:#ececec;overflow:hidden}
+  .diffbar .db>span{display:block;height:100%;border-radius:99px;background:var(--s3);transition:width .45s ease}
+  .diffbar.best .db>span{background:var(--ok)}
+  .diffbar .dv{font-weight:800;flex:none;width:92px;text-align:right;font-size:12.5px;font-variant-numeric:tabular-nums}
+  .diffbar.best .dv{color:var(--ok)}
+  .chk{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px dashed var(--line)}
+  .chk:last-child{border-bottom:0}
+  .chk .no{flex:none;width:20px;height:20px;border-radius:99px;background:var(--seal-soft);color:var(--seal);
+    font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .chk .ct{font-size:13px;line-height:1.6}
+  .chk .ct b{display:block;margin-bottom:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate">📈 재테크 계산기</span>
+    <h1>배당소득 <span class="accent">분리과세</span>, 나는<br>어느 쪽이 유리한가</h1>
+    <p class="sub">고배당기업 배당은 분리과세를 <strong>선택</strong>할 수 있습니다. 자동이 아니고, 항상 유리하지도 않습니다.</p>
+    <span class="asof" id="asOfBadge"></span>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="calc"><span class="n">1</span>세금비교</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="target"><span class="n">2</span>대상확인</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="rate"><span class="n">3</span>세율표</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="how"><span class="n">4</span>신고방법</button>
+  </div>
+
+  <!-- TAB1 세금비교 -->
+  <section class="panel" data-tab="calc" data-active="true">
+    <div class="card">
+      <h2>소득 입력 <span class="hint" style="font-weight:600;font-size:12px;color:var(--ink-soft)">· 만원 단위</span></h2>
+      <label class="field">
+        <span class="lab">고배당기업 배당금 <span class="hint">분리과세 대상 국내 상장사 현금배당</span></span>
+        <span class="inline"><input type="number" id="div" value="5000" min="0" step="100"><span class="unit">만원</span></span>
+      </label>
+      <label class="field">
+        <span class="lab">그 외 금융소득 <span class="hint">이자 + 일반 배당 + 해외 배당</span></span>
+        <span class="inline"><input type="number" id="ofin" value="500" min="0" step="100"><span class="unit">만원</span></span>
+      </label>
+      <label class="field">
+        <span class="lab">그 외 종합소득 과세표준 <span class="hint">근로·사업소득에서 공제를 뺀 금액</span></span>
+        <span class="inline"><input type="number" id="oinc" value="5000" min="0" step="100"><span class="unit">만원</span></span>
+      </label>
+    </div>
+    <div class="result" id="calcBox"></div>
+    <div class="card">
+      <h2>금융소득에 붙는 세금</h2>
+      <div id="bars"></div>
+      <div class="note" style="margin-top:12px" id="calcNote"></div>
+    </div>
+    <div class="card">
+      <h2>계산 조건</h2>
+      <div class="note">
+        <p style="margin:0 0 9px">지방소득세 10%를 포함한 금액입니다. 종합과세는 <strong>비교과세</strong>(일반산출세액과 비교산출세액 중 큰 값) 구조로 계산하고, 내국법인 배당의 <strong>배당가산(Gross-up) 11%와 배당세액공제</strong>를 반영했습니다.</p>
+        <p style="margin:0 0 9px">근로소득공제·인적공제 등을 이미 뺀 <strong>과세표준</strong>을 입력해야 정확합니다. 대략 총급여의 55~70% 수준입니다.</p>
+        <p style="margin:0"><strong>건강보험료</strong>는 반영하지 않았습니다. 분리과세를 선택해도 보험료 산정에는 포함될 수 있어 별도 확인이 필요합니다.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB2 대상확인 -->
+  <section class="panel" data-tab="target">
+    <div class="card">
+      <h2>내 배당이 대상인지 확인</h2>
+      <div class="chk"><span class="no">1</span><span class="ct"><b>고배당기업인가</b>배당성향 40% 이상이거나, 배당성향 25% 이상이면서 전년 대비 배당액이 10% 이상 늘어난 국내 상장사여야 합니다.</span></div>
+      <div class="chk"><span class="no">2</span><span class="ct"><b>기업가치 제고계획 공시를 했는가</b>고배당기업은 정기주주총회 배당 결의 다음 날까지 한국거래소 상장공시제출시스템에 요건 충족 실적을 담아 공시해야 합니다. 공시가 없으면 특례를 적용받지 못합니다.</span></div>
+      <div class="chk"><span class="no">3</span><span class="ct"><b>현금배당을 직접 받았는가</b>주식을 직접 보유해 받은 현금배당이 대상입니다. ETF·펀드 분배금은 해당하지 않습니다.</span></div>
+      <div class="chk"><span class="no">4</span><span class="ct"><b>2026년 이후 지급분인가</b>2026년 1월 1일 이후 지급되는 배당부터 적용되며, 2028년까지 한시 시행입니다.</span></div>
+      <div class="chk"><span class="no">5</span><span class="ct"><b>해외 주식은 제외</b>미국 주식 등 해외 배당은 대상이 아닙니다. 종전대로 금융소득에 합산됩니다.</span></div>
+    </div>
+    <div class="card">
+      <h2>어디서 확인하나요</h2>
+      <div class="note">
+        <p style="margin:0 0 9px">종목별 요건 충족 여부는 <strong>한국거래소 KIND</strong>의 기업가치 제고계획 공시에서 확인합니다. 배당 결의 직후 공시가 올라옵니다.</p>
+        <p style="margin:0">증권사 계좌의 배당금 내역만으로는 대상 여부를 알 수 없습니다. 5월 종합소득세 신고 전에 종목별로 확인해 두세요.</p>
+      </div>
+      <div class="chips"><span class="chip fix">2026.1.1 시행 중</span><span class="chip plan">2028년까지 한시</span></div>
+    </div>
+  </section>
+
+  <!-- TAB3 세율표 -->
+  <section class="panel" data-tab="rate">
+    <div class="card">
+      <h2>분리과세 4단계 세율</h2>
+      <table>
+        <thead><tr><th>배당소득 구간</th><th class="num">세율</th><th class="num">지방세 포함</th></tr></thead>
+        <tbody id="rateBody"></tbody>
+      </table>
+      <div class="note" style="margin-top:10px">구간별 <strong>누진</strong> 방식입니다. 배당 1억원이면 전액에 20%가 아니라, 2,000만원까지 14% + 나머지 8,000만원에 20%가 붙습니다.</div>
+    </div>
+    <div class="card">
+      <h2>종합과세와 뭐가 다른가</h2>
+      <table>
+        <thead><tr><th>구분</th><th>종합과세(기본)</th><th>분리과세(선택)</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:700">세율</td><td>다른 소득과 합산해 6~45%</td><td>배당만 따로 14~30%</td></tr>
+          <tr><td style="font-weight:700">최저 부담</td><td>비교과세로 최소 14% 보장</td><td>2,000만원 초과분부터 20%</td></tr>
+          <tr><td style="font-weight:700">배당세액공제</td><td>적용</td><td>미적용</td></tr>
+          <tr><td style="font-weight:700">적용</td><td>자동</td><td>5월 신고 때 신청</td></tr>
+        </tbody>
+      </table>
+      <div class="note" style="margin-top:10px"><strong>금융소득이 2,000만원 이하면 어느 쪽이든 결과가 같습니다.</strong> 이미 15.4% 원천징수로 끝나기 때문입니다.</div>
+    </div>
+  </section>
+
+  <!-- TAB4 신고방법 -->
+  <section class="panel" data-tab="how">
+    <div class="card">
+      <h2>신고 흐름</h2>
+      <div class="tl">
+        <div class="item"><div class="d">3~4월</div><div class="t">배당 지급 · 15.4% 원천징수</div><ul><li>증권사가 자동으로 떼고 입금합니다.</li><li>같은 시기에 기업가치 제고계획 공시를 확인하세요.</li></ul></div>
+        <div class="item"><div class="d">연말</div><div class="t">금융소득 합계 점검</div><ul><li>이자 + 배당 합계가 2,000만원을 넘는지 확인합니다.</li><li>넘지 않으면 신고 자체가 필요 없습니다.</li></ul></div>
+        <div class="item"><div class="d">다음 해 5월</div><div class="t">종합소득세 신고 · 분리과세 선택</div><ul><li>분리과세는 자동이 아니라 신고 때 신청해야 합니다.</li><li>이 계산기로 두 방식을 비교한 뒤 유리한 쪽을 고릅니다.</li></ul></div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>놓치기 쉬운 것</h2>
+      <div class="note">
+        <p style="margin:0 0 9px"><strong>분리과세가 항상 유리하지 않습니다.</strong> 다른 소득이 적으면 종합과세 쪽이 세금이 더 적게 나옵니다. 금액을 넣어 직접 비교하세요.</p>
+        <p style="margin:0 0 9px"><strong>ISA 계좌 안의 배당</strong>은 이 특례와 무관하게 ISA 규칙(비과세 한도·9.9% 분리과세)이 적용됩니다.</p>
+        <p style="margin:0"><strong>건강보험료</strong>는 세금과 별개입니다. 피부양자 자격 상실 기준도 함께 확인하세요.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="disclaimer">
+      <b>참고용 계산기입니다.</b> 조세특례제한법 제104조의27(2025.12.23 개정, 2026.1.1 시행) 기준이며, 실제 세액은 공제·감면과 개인별 소득 구성에 따라 달라집니다. 신고 전 국세청 홈택스나 세무 전문가로 확인하세요.
+    </div>
+    <div class="srcs" id="sources"></div>
+  </footer>
+</div>
+
+<script>
+const P = {
+  asOf: "2026.08.08",
+  incomeBrackets: [[1400,0.06],[5000,0.15],[8800,0.24],[15000,0.35],[30000,0.38],[50000,0.40],[100000,0.42],[Infinity,0.45]],
+  sepBrackets: [[2000,0.14],[30000,0.20],[500000,0.25],[Infinity,0.30]],
+  local: 1.1,          /* 지방소득세 10% */
+  grossUp: 0.11,       /* 배당가산율 */
+  threshold: 2000,     /* 금융소득종합과세 기준 */
+  sources: [
+    {label:"국세청", url:"https://www.nts.go.kr"},
+    {label:"한국거래소 KIND", url:"https://kind.krx.co.kr"},
+    {label:"재정경제부", url:"https://www.moef.go.kr"}
+  ]
+};
+
+const $ = s => document.querySelector(s);
+const won = v => Math.round(v).toLocaleString("ko-KR");
+const eok = v => v >= 10000 ? (v/10000).toFixed(1).replace(/\.0$/,"") + "억원" : won(v) + "만원";
+
+function progressive(base, brackets){
+  let tax = 0, prev = 0;
+  for(const [cap, rate] of brackets){
+    if(base <= prev) break;
+    tax += (Math.min(base, cap) - prev) * rate;
+    prev = cap;
+  }
+  return tax;
+}
+
+const sepTax = div => progressive(div, P.sepBrackets);
+
+function compTax(fin, other){
+  const baseOther = progressive(other, P.incomeBrackets);
+  if(fin <= P.threshold) return fin * 0.14 + baseOther;
+  const over = fin - P.threshold;
+  const gu = over * P.grossUp;
+  const b = fin * 0.14 + baseOther;
+  let a = P.threshold * 0.14 + progressive(other + over + gu, P.incomeBrackets);
+  a -= Math.min(gu, Math.max(0, a - b));
+  return Math.max(a, b);
+}
+
+function renderCalc(){
+  const div = Math.max(0, +$("#div").value || 0);
+  const ofin = Math.max(0, +$("#ofin").value || 0);
+  const oinc = Math.max(0, +$("#oinc").value || 0);
+  const baseOther = progressive(oinc, P.incomeBrackets);
+
+  /* 금융소득에 귀속되는 세금만 비교 */
+  const sep = (sepTax(div) + compTax(ofin, oinc) - baseOther) * P.local;
+  const com = (compTax(div + ofin, oinc) - baseOther) * P.local;
+  const best = sep < com ? "sep" : (com < sep ? "com" : "same");
+  const gap = Math.abs(com - sep);
+  const total = div + ofin;
+
+  let verdict, cls;
+  if(total <= P.threshold){ verdict = "금융소득 2,000만원 이하 — 어느 쪽이든 결과가 같습니다"; cls = "warn"; }
+  else if(best === "sep"){ verdict = "분리과세를 선택하는 쪽이 유리합니다"; cls = "ok"; }
+  else if(best === "com"){ verdict = "그냥 종합과세가 유리합니다 — 분리과세를 신청하면 손해"; cls = "no"; }
+  else { verdict = "두 방식의 세금이 같습니다"; cls = "warn"; }
+
+  $("#calcBox").innerHTML =
+    '<div class="eyebrow">유리한 쪽을 골랐을 때 차이</div>' +
+    '<div class="big">' + won(gap) + '<small> 만원</small></div>' +
+    '<div class="verdict ' + cls + '">' + verdict + "</div>" +
+    '<div class="kv"><span class="k">금융소득 합계</span><span class="v">' + eok(total) + "</span></div>" +
+    '<div class="kv"><span class="k">실효세율(유리한 쪽)</span><span class="v">' +
+      (total > 0 ? (Math.min(sep, com) / total * 100).toFixed(1) + "%" : "—") + "</span></div>";
+
+  const max = Math.max(sep, com, 1);
+  const bar = (k, v, isBest) =>
+    '<div class="diffbar' + (isBest ? " best" : "") + '"><span class="dk">' + k + '</span>' +
+    '<span class="db"><span style="width:' + Math.min(100, v / max * 100) + '%"></span></span>' +
+    '<span class="dv">' + won(v) + "만원</span></div>";
+
+  $("#bars").innerHTML =
+    bar("분리과세", sep, best === "sep") +
+    bar("종합과세", com, best === "com");
+
+  const sepDetail = div > P.threshold
+    ? "2,000만원까지 14%, 나머지 " + eok(div - P.threshold) + "에 20% 이상"
+    : "전액 14% 구간";
+  $("#calcNote").innerHTML =
+    "고배당 배당 " + eok(div) + "을 분리과세하면 " + sepDetail + "가 적용됩니다. " +
+    "종합과세는 다른 소득과 합쳐 누진세율을 적용하되, <strong>금융소득 전체에 14%를 매긴 금액보다는 적게 나오지 않습니다</strong>(비교과세). " +
+    "그래서 다른 소득이 적으면 종합과세의 실효세율이 14%대에 머물러, 20% 구간이 걸리는 분리과세보다 유리해질 수 있습니다.";
+}
+
+function renderRate(){
+  const rows = [
+    ["2,000만원 이하", "14%", "15.4%"],
+    ["2,000만원 초과 ~ 3억원 이하", "20%", "22%"],
+    ["3억원 초과 ~ 50억원 이하", "25%", "27.5%"],
+    ["50억원 초과", "30%", "33%"]
+  ];
+  $("#rateBody").innerHTML = rows.map(r =>
+    "<tr><td>" + r[0] + '</td><td class="num">' + r[1] + '</td><td class="num">' + r[2] + "</td></tr>").join("");
+}
+
+function render(){ renderCalc(); renderRate(); }
+
+$("#asOfBadge").textContent = P.asOf + " 기준 · 조특법 §104의27";
+["#div","#ofin","#oinc"].forEach(s => $(s).addEventListener("input", render));
+document.querySelectorAll(".tab").forEach(t => {
+  t.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(x => x.setAttribute("aria-selected", String(x === t)));
+    document.querySelectorAll(".panel").forEach(p => p.dataset.active = String(p.dataset.tab === t.dataset.tab));
+  });
+});
+$("#sources").innerHTML = P.sources.map(s => "<a href='" + s.url + "' target='_blank' rel='noopener'>" + s.label + "</a>").join("");
+render();
+</script>
+
+<!-- 방문 통계(GoatCounter). GC_CODE에 본인 코드를 넣으면 켜지고, 비워두면 아무 동작도 하지 않습니다. -->
+<script>
+var GC_CODE = "";
+if(GC_CODE){
+  var _gc = document.createElement("script");
+  _gc.async = true;
+  _gc.src = "https://gc.zgo.at/count.js";
+  _gc.setAttribute("data-goatcounter", "https://" + GC_CODE + ".goatcounter.com/count");
+  document.body.appendChild(_gc);
+}
+</script>
+</body>
+</html>
