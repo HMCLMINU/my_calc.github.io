@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>계산기 모음</title>
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --s1:#2f6d8f;--s2:#5a8fa8;--s3:#94b3c4;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .lead{color:var(--ink-soft);font-size:14px;margin:6px 0 0}
+  .filters{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 0}
+  .filters button{appearance:none;cursor:pointer;font:inherit;font-size:12.5px;font-weight:700;padding:7px 13px;
+    border-radius:99px;border:1px solid var(--line);background:#fbfbf9;color:var(--ink-soft);transition:all .15s ease}
+  .filters button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  .cards{display:flex;flex-direction:column;gap:14px;margin-top:18px}
+  a.calcard{display:block;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:18px;box-shadow:var(--shadow);transition:transform .12s ease,box-shadow .12s ease}
+  a.calcard:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(22,35,58,.08),0 14px 34px rgba(22,35,58,.10)}
+  .calcard .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;padding:3px 9px;border-radius:99px;margin-bottom:10px}
+  .tag.sale{color:var(--seal);background:var(--seal-soft)}
+  .tag.rent{color:#2f6d8f;background:#e3eef4}
+  .tag.policy{color:var(--gold);background:#f7f0e0}
+  .tag.stock{color:#2f7d5b;background:#e6f2ec}
+  .calcard .asof{display:inline-block;font-size:11px;font-weight:800;color:var(--ink-soft);
+    border:1px dashed var(--line);border-radius:99px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+  .calcard h2{font-size:18px;font-weight:800;margin:0 0 4px;letter-spacing:-.01em}
+  .calcard .meta{color:var(--ink-soft);font-size:13px;margin:0 0 12px}
+  .calcard .facts{display:flex;flex-direction:column;gap:5px;font-size:13px;margin-bottom:14px}
+  .calcard .facts .row{display:flex;gap:8px}
+  .calcard .facts .k{color:var(--ink-soft);min-width:64px;font-weight:600}
+  .calcard .go{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:14px;color:var(--ink)}
+  .calcard .go .arrow{transition:transform .12s ease}
+  a.calcard:hover .go .arrow{transform:translateX(3px)}
+  .empty{font-size:13px;color:var(--ink-soft);padding:24px 0;text-align:center}
+  .total{display:none;font-size:12px;font-weight:800;color:var(--ink-soft);background:#fbfaf6;
+    border:1px dashed var(--line);border-radius:99px;padding:5px 12px;margin-top:14px}
+  .foot{margin-top:26px;font-size:12px;color:var(--ink-soft);line-height:1.6;border-top:1px solid var(--line);padding-top:14px}
+  .warn{font-size:12px;color:var(--warn);background:#fbf5e8;border:1px dashed #eadfc4;border-radius:10px;padding:10px 12px;margin-bottom:14px;display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate" id="plate"></span>
+    <h1 id="heading"></h1>
+    <p class="lead" id="lead"></p>
+    <div class="filters" id="filters"></div>
+  </header>
+
+  <div class="warn" id="warn">
+    site.json을 불러오지 못해 내장 목록을 표시하고 있습니다. 로컬 파일로 열면 생기는 정상 동작이며, GitHub Pages에 올리면 site.json이 반영됩니다.
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <span class="total" id="total"></span>
+  <div class="foot" id="foot"></div>
+</div>
+
+<script>
+/* ============================================================
+   이 파일은 손대지 않습니다.
+   카드 추가·수정은 전부 같은 폴더의 site.json에서 합니다.
+   site.json을 못 읽는 경우(로컬 파일 열기 등)에만 아래 FALLBACK이 쓰입니다.
+   ============================================================ */
+const FALLBACK = {
+  plate: "🧮 계산기 모음",
+  heading: "부동산·청약|계산기",
+  lead: "공고문과 정부 정책에서 뽑은 조건으로 만든 계산기입니다.",
+  foot: "참고용 추정치입니다. 정확한 내용은 공식 공고문과 자료에서 확인하세요.",
+  cards: []
+};
+
+const TAG_ORDER = { policy: 0, sale: 1, rent: 2, stock: 3 };
+
+function esc(s){
+  return String(s == null ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function renderHeader(site){
+  document.getElementById("plate").textContent = site.plate || "";
+  const h = String(site.heading || "");
+  document.getElementById("heading").innerHTML = h.includes("|")
+    ? h.split("|").map(function(p, i){ return i === 0 ? esc(p) : "<span class='accent'>" + esc(p) + "</span>"; }).join("<br>")
+    : esc(h);
+  document.getElementById("lead").textContent = site.lead || "";
+  document.getElementById("foot").textContent = site.foot || "";
+  if(site.title) document.title = site.title;
+}
+
+function cardHtml(c){
+  const facts = (c.facts || []).map(function(f){
+    return "<div class='row'><span class='k'>" + esc(f[0]) + "</span><span>" + esc(f[1]) + "</span></div>";
+  }).join("");
+  return "<a class='calcard' href='" + esc(c.href || ("./" + c.slug + "/")) + "'>" +
+    "<span class='tag " + esc(c.tag || "rent") + "'>" + esc(c.tagLabel || "") + "</span>" +
+    (c.asOf ? "<span class='asof'>기준 " + esc(c.asOf) + "</span>" : "") +
+    "<h2>" + esc(c.title) + "</h2>" +
+    "<p class='meta'>" + esc(c.meta || "") + "</p>" +
+    "<div class='facts'>" + facts + "</div>" +
+    "<span class='go'>계산기 열기 <span class='arrow'>→</span></span>" +
+  "</a>";
+}
+
+var ALL = [], filter = "all";
+
+function renderCards(){
+  const list = filter === "all" ? ALL : ALL.filter(function(c){ return c.tag === filter; });
+  const box = document.getElementById("cards");
+  box.innerHTML = list.length
+    ? list.map(cardHtml).join("")
+    : "<div class='empty'>해당하는 계산기가 아직 없습니다.</div>";
+}
+
+function renderFilters(){
+  const labels = { all:"전체", policy:"정책", sale:"분양", rent:"임대", stock:"주식" };
+  const present = ["all"].concat(Object.keys(TAG_ORDER).filter(function(t){
+    return ALL.some(function(c){ return c.tag === t; });
+  }));
+  if(present.length <= 2){ document.getElementById("filters").style.display = "none"; return; }
+  document.getElementById("filters").innerHTML = present.map(function(t){
+    return "<button data-t='" + t + "' aria-pressed='" + (t === filter) + "'>" + labels[t] + "</button>";
+  }).join("");
+  document.querySelectorAll("#filters button").forEach(function(b){
+    b.addEventListener("click", function(){
+      filter = b.dataset.t;
+      document.querySelectorAll("#filters button").forEach(function(x){
+        x.setAttribute("aria-pressed", String(x.dataset.t === filter));
+      });
+      renderCards();
+    });
+  });
+}
+
+function initAnalytics(site){
+  var a = site.analytics || {};
+  if(!a.code) return;                       /* 코드가 없으면 아무것도 하지 않음 */
+  var s = document.createElement("script");
+  s.async = true;
+  s.src = "https://gc.zgo.at/count.js";
+  s.setAttribute("data-goatcounter", "https://" + a.code + ".goatcounter.com/count");
+  document.body.appendChild(s);
+  if(a.showTotal === false) return;          /* 숫자 노출만 끄고 집계는 유지 */
+  fetch("https://" + a.code + ".goatcounter.com/counter/TOTAL.json")
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d || !d.count) return;
+      var t = document.getElementById("total");
+      t.textContent = "누적 조회 " + d.count + "회";
+      t.style.display = "inline-block";
+    })
+    .catch(function(){});                     /* 실패해도 페이지는 정상 동작 */
+}
+
+function boot(site, failed){
+  if(failed) document.getElementById("warn").style.display = "block";
+  renderHeader(site);
+  ALL = (site.cards || []).slice().sort(function(a, b){
+    var av = (a.pin || a.tag === "policy") ? 0 : 1;
+    var bv = (b.pin || b.tag === "policy") ? 0 : 1;
+    return av - bv;
+  });
+  renderFilters();
+  renderCards();
+  initAnalytics(site);
+}
+
+fetch("./site.json", { cache: "no-store" })
+  .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
+  .then(function(site){ boot(site, false); })
+  .catch(function(){ boot(FALLBACK, true); });
+</script>
+</body>
+</html>
