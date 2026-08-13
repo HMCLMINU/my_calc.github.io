@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>송파 시그니처 롯데캐슬 불법행위 재공급 계산기</title>
+<meta name="description" content="송파 시그니처 롯데캐슬 불법행위 재공급(계약취소주택) 1세대 — 신청자격·자금계획·대출한도·납부일정을 공고문 기준으로 계산합니다.">
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --s1:#2f6d8f;--s2:#5a8fa8;--s3:#94b3c4;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:22px 0 18px;background:#ecebe4;padding:5px;border-radius:12px}
+  .tab{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:12.5px;padding:10px 4px;
+    border-radius:8px;color:var(--ink-soft);background:transparent;transition:all .18s ease}
+  .tab .n{display:block;font-size:9px;letter-spacing:.08em;opacity:.6;font-weight:800;margin-bottom:2px}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel[data-active="true"]{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  label.field{display:block;margin-bottom:16px}
+  label.field:last-child{margin-bottom:0}
+  .field .lab{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .stepper{display:flex;gap:8px;flex-wrap:wrap}
+  .stepper button{flex:1 1 44px;min-width:44px;cursor:pointer;border:1px solid var(--line);background:#fbfbf9;
+    border-radius:9px;font:inherit;font-weight:700;padding:9px 4px;color:var(--ink);transition:all .15s ease}
+  .stepper button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  .stepper.good button[aria-pressed="true"]{border-color:var(--ok);background:#e6f2ec;color:var(--ok)}
+  input[type=number]{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  input:focus,.stepper button:focus-visible,.tab:focus-visible,select:focus{outline:2px solid var(--seal);outline-offset:1px}
+  select{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  .inline{display:flex;align-items:center;gap:8px}
+  .inline input{text-align:right}
+  .unit{color:var(--ink-soft);font-weight:700;font-size:13px;white-space:nowrap}
+  .result{border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid var(--line);background:var(--card)}
+  .result .eyebrow{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--ink-soft);text-transform:uppercase}
+  .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+  .big small{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .verdict{font-size:14px;font-weight:700}
+  .verdict.ok{color:var(--ok)}.verdict.warn{color:var(--warn)}.verdict.no{color:var(--seal)}
+  .bar{height:12px;border-radius:99px;background:#ececec;overflow:hidden;margin:12px 0 6px}
+  .bar>span{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+  .barscale{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);font-weight:700}
+  .kv{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft);font-weight:600}.kv .v{font-weight:800;white-space:nowrap}
+  .kv.total{border-top:2px solid var(--ink);border-bottom:0;margin-top:6px;padding-top:12px}
+  .kv.total .k{color:var(--ink);font-weight:800}
+  .kv.total .v{color:var(--seal);font-size:16px}
+  .gate{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;margin-bottom:8px;background:#fbfbf9}
+  .gate.bind{border-color:var(--seal);background:var(--seal-soft)}
+  .gate .gk{font-weight:700;flex:none;width:96px}
+  .gate .gv{margin-left:auto;font-weight:800}
+  .gate .tagx{font-size:10.5px;font-weight:800;color:var(--seal);letter-spacing:.06em}
+  .checks{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+  .chk{display:flex;gap:9px;align-items:flex-start;font-size:13px;padding:8px 10px;border-radius:9px;background:#fbfbf9;border:1px solid var(--line)}
+  .chk.bad{border-color:var(--seal);background:var(--seal-soft);color:var(--seal);font-weight:700}
+  .chk .mk{flex:none;font-weight:800}
+  .timeline{display:flex;flex-direction:column;gap:0;margin-top:6px}
+  .tl{display:flex;gap:12px;padding:0 0 16px;position:relative}
+  .tl:last-child{padding-bottom:0}
+  .tl .dot{flex:none;width:12px;height:12px;border-radius:99px;background:var(--s2);margin-top:5px;z-index:1}
+  .tl.hot .dot{background:var(--seal)}
+  .tl:not(:last-child)::before{content:"";position:absolute;left:5px;top:14px;bottom:0;width:2px;background:var(--line)}
+  .tl .tlb{flex:1}
+  .tl .tld{font-size:12px;font-weight:800;color:var(--ink-soft);letter-spacing:.02em}
+  .tl .tlt{font-weight:800;font-size:14px;margin:1px 0 2px}
+  .tl .tlm{font-size:12.5px;color:var(--ink-soft)}
+  .tl .tlm b{color:var(--seal)}
+  .note{font-size:12px;color:var(--ink-soft);line-height:1.55}
+  .note strong{color:var(--ink)}
+  .flag{font-size:12px;line-height:1.55;background:#fdf6e9;border:1px solid #e8d5ab;border-radius:10px;padding:12px 14px;color:#6b5320}
+  .flag b{color:#8a5a12}
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:#fbfaf6;border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+  .disclaimer b{color:var(--seal)}
+  .links{margin-top:12px;font-size:12.5px;line-height:1.9}
+  .links a{color:var(--s1);font-weight:700;text-decoration:none;border-bottom:1px solid #cfe0e9}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate" id="plateText">🔑 계약취소주택 재공급</span>
+    <h1>송파 시그니처 롯데캐슬<br><span class="accent">1세대</span> 자격·자금 계산</h1>
+    <p class="sub" id="subText"></p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="elig"><span class="n">1</span>자격</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="cash"><span class="n">2</span>자금</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="loan"><span class="n">3</span>대출</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="sched"><span class="n">4</span>일정·차익</button>
+  </div>
+
+  <!-- TAB1 자격 -->
+  <section class="panel" data-tab="elig" data-active="true">
+    <div class="card">
+      <p class="note" style="margin:0 0 14px"><strong>청약통장은 필요 없습니다.</strong> 대신 자격이 좁습니다 — 공고일(2026.08.10) 기준 <strong>서울시 거주 무주택세대주</strong>만 신청할 수 있고, 경쟁이 있으면 <strong>추첨</strong>으로 1명을 뽑습니다.</p>
+      <div id="eligFields"></div>
+    </div>
+    <div class="result" id="eligResult"></div>
+    <div class="card">
+      <p class="note"><strong>당첨되면 되돌릴 수 없는 제약이 붙습니다.</strong> 계약 체결 여부와 상관없이 당첨자로 관리되며, 당첨자 발표일부터 <strong>재당첨 제한 10년</strong>, 투기과열지구·청약과열지역 <strong>1순위 청약 제한 5년</strong>이 본인과 세대원에게 적용됩니다. 예비입주자는 일반공급 세대수의 900%(9명)를 추첨으로 뽑고, 동·호수를 최초 배정받으면 계약 여부와 무관하게 당첨자로 관리됩니다.</p>
+    </div>
+  </section>
+
+  <!-- TAB2 자금 -->
+  <section class="panel" data-tab="cash" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">받을 대출 예정액 <span class="hint">(대출 탭 결과가 자동 반영 · 만원)</span></span>
+        <div class="inline"><input type="number" id="useLoan" inputmode="numeric" value="40000"><span class="unit">만원</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">취득세 과세표준 <span class="hint">옵션(발코니 확장·빌트인) 포함 여부는 지자체 확인</span></span>
+        <div class="stepper" id="taxBase">
+          <button data-v="all" aria-pressed="true">옵션 포함</button>
+          <button data-v="supply">공급금액만</button>
+        </div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">등기·법무비 등 <span class="hint">(소유권이전등기 대행·인지·증지 · 만원)</span></span>
+        <div class="inline"><input type="number" id="regFee" inputmode="numeric" value="200"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="result" id="cashResult"></div>
+    <div class="card">
+      <div class="kv"><span class="k">공급금액 (대지비+건축비+재분양비)</span><span class="v" id="k_supply">—</span></div>
+      <div class="kv"><span class="k">옵션 (VAT 10% 포함)</span><span class="v" id="k_option">—</span></div>
+      <div class="kv"><span class="k">취득세 + 지방교육세 <span id="k_taxrate"></span></span><span class="v" id="k_tax">—</span></div>
+      <div class="kv"><span class="k">등기·법무비</span><span class="v" id="k_reg">—</span></div>
+      <div class="kv total"><span class="k">총 소요자금</span><span class="v" id="k_total">—</span></div>
+      <div class="kv"><span class="k">− 대출</span><span class="v" id="k_loan">—</span></div>
+      <div class="kv total"><span class="k">필요 현금(자기자본)</span><span class="v" id="k_own">—</span></div>
+    </div>
+    <div class="card">
+      <p class="note" style="margin:0 0 10px"><strong>시점별로 언제 얼마가 필요한가</strong> — 계약금은 대출로 못 채웁니다.</p>
+      <div class="kv"><span class="k">① 계약 시 (2026.08.24~28)</span><span class="v" id="k_step1">—</span></div>
+      <div class="kv"><span class="k">② 잔금 (입주지정기간)</span><span class="v" id="k_step2">—</span></div>
+      <div class="kv"><span class="k">③ 취득세·등기비 (취득일 60일 내)</span><span class="v" id="k_step3">—</span></div>
+    </div>
+    <div class="card">
+      <div class="flag" id="cashFlag"></div>
+    </div>
+  </section>
+
+  <!-- TAB3 대출 -->
+  <section class="panel" data-tab="loan" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">부부합산 연소득 <span class="hint">(세전 · 만원)</span></span>
+        <div class="inline"><input type="number" id="income" inputmode="numeric" value="8000"><span class="unit">만원 / 연</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">기존 대출 연 원리금 <span class="hint">(신용대출·자동차할부·마이너스통장 등 · 만원)</span></span>
+        <div class="inline"><input type="number" id="debt" inputmode="numeric" value="0"><span class="unit">만원 / 연</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">담보가치 기준 <span class="hint">은행이 어느 값을 담보가로 볼지에 따라 LTV 결과가 달라집니다</span></span>
+        <div class="stepper" id="basis">
+          <button data-v="market" aria-pressed="true">시세 21억</button>
+          <button data-v="cost">취득가 10.2억</button>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lab">금리 / 기간 <span class="hint">한도 산정에는 스트레스 금리 3.0%p가 더해집니다</span></span>
+        <div class="inline" style="gap:14px"><span class="unit">금리</span><input type="number" id="rate" inputmode="decimal" value="4.5" step="0.1"><span class="unit">% / 연</span></div>
+        <div class="inline" style="gap:14px;margin-top:10px"><span class="unit">기간</span><input type="number" id="years" inputmode="numeric" value="30"><span class="unit">년 (원리금균등)</span></div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">LTV <span class="hint" id="ltvHint"></span></span>
+        <div class="inline"><input type="number" id="ltv" inputmode="numeric" value="40"><span class="unit">%</span></div>
+      </label>
+    </div>
+    <div class="result" id="loanResult"></div>
+    <div class="card">
+      <p class="note" style="margin:0 0 10px"><strong>대출 한도의 3관문</strong> — 셋 중 가장 작은 값이 실제 한도입니다.</p>
+      <div id="gates"></div>
+    </div>
+    <div class="card">
+      <p class="note" id="loanNote"></p>
+    </div>
+  </section>
+
+  <!-- TAB4 일정·차익 -->
+  <section class="panel" data-tab="sched" data-active="false">
+    <div class="card">
+      <p class="note" style="margin:0 0 14px"><strong>발표에서 계약까지 3일, 잔금까지 한 달 남짓입니다.</strong> 자금이 준비되지 않은 상태의 당첨은 위약금과 10년 재당첨 제한만 남깁니다.</p>
+      <div class="timeline" id="timeline"></div>
+    </div>
+    <div class="card">
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">비교할 시세 <span class="hint">최근 실거래 21억(2026.07, 14층) / 21.1억(2026.06, 23층)</span></span>
+        <div class="inline"><input type="number" id="market" inputmode="numeric" value="210000"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="result" id="gapResult"></div>
+    <div class="card">
+      <div class="kv"><span class="k">시세</span><span class="v" id="g_market">—</span></div>
+      <div class="kv"><span class="k">− 총 소요자금 (분양가+옵션+세금+등기비)</span><span class="v" id="g_cost">—</span></div>
+      <div class="kv total"><span class="k">단순 차액</span><span class="v" id="g_gap">—</span></div>
+    </div>
+    <div class="card">
+      <p class="note"><strong>이 차액은 실현된 수익이 아닙니다.</strong> 재당첨 제한 10년, 취득 후 보유·처분 시의 양도소득세, 중개보수, 보유세, 그리고 팔 때의 시세 변동이 모두 빠져 있습니다. 전매제한은 도과했지만 <strong>거주의무 표기</strong>(아래 안내)와 규제지역 주담대의 <strong>6개월 내 전입 의무</strong>가 걸릴 수 있어, 잔금 직후 전세를 놓아 자금을 메우는 방식은 성립하지 않을 수 있습니다.</p>
+    </div>
+    <div class="card">
+      <div class="flag" id="schedFlag"></div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="disclaimer" id="disclaimer"></div>
+    <div class="links">
+      🔗 <a href="../policy/">대출 규제(LTV·한도 캡·스트레스 DSR) 총정리</a><br>
+      🔗 <a href="../">계산기 전체 모음</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   PARAMS — 공고별로 이 블록만 교체한다.
+   출처: 청약홈 입주자모집공고 「송파 시그니처 롯데캐슬 불법행위 재공급」
+        주택관리번호 2026930025 · 공고일 2026.08.10
+   금액 단위: 원(₩)
+   ============================================================ */
+const PARAMS = {
+  complex: "송파 시그니처 롯데캐슬",
+  type: "불법행위 재공급(계약취소주택)",
+  region: "서울특별시 송파구 거여동 181, 202번지 일원",
+  unitDesc: "105동 2904호 · 전용 84.9800㎡C · 29층 · 1세대",
+  source: "청약홈 공고(주택관리번호 2026930025), 공고일 2026.08.10",
+
+  // 공급금액 (원) — 공고 3번 표
+  supply: 940850000,
+  supplyParts: { land: 486685000, build: 406315000, resale: 47850000 },
+
+  // 옵션 (원, VAT 별도) — 발코니 확장 19,800,000 + 빌트인 가구 42,000,000 + 시스템에어컨 9,900,000
+  option: 71700000,
+  optionVat: 0.10,
+
+  // 납부구조 — 계약금 30% / 잔금 70% (중도금 없음)
+  pay: { contract: 0.30, balance: 0.70 },
+
+  // 최근 실거래 (원) — 국토부 실거래가, 2026.07 14층 21.0억 / 2026.06 23층 21.1억
+  market: 2100000000,
+
+  // 대출 규제 (2026.08 기준 · 수도권 규제지역)
+  loan: {
+    ltv: 40,                    // 무주택·규제지역
+    dsr: 40,                    // 은행권
+    stress: 3.0,                // 수도권·규제지역 주담대 스트레스 금리 하한
+    capTable: [[1500000000, 600000000], [2500000000, 400000000], [Infinity, 200000000]],
+    moveInMonths: 6             // 규제지역 주담대 전입 의무
+  },
+
+  // 취득세 (85㎡ 이하 → 농특세 비과세, 지방교육세 = 취득세율×50%×20%)
+  tax: { over9eok: 0.03, area: 84.98 },
+
+  schedule: [
+    { d:"2026.08.10 (월)", t:"입주자모집공고", m:"자격 판단 기준일 — 이 날 기준으로 서울 거주·무주택세대주 여부를 봅니다." },
+    { d:"2026.08.18 (화)", t:"일반공급 청약접수", m:"청약홈 PC·모바일 09:00~17:30. 현장접수 불가. <b>17:30 이후 취소 불가.</b>", hot:true },
+    { d:"2026.08.21 (금)", t:"당첨자 발표", m:"08:00 문자, 청약홈 조회 2026.08.21~08.30. 예비입주자 9명 동시 발표." },
+    { d:"2026.08.24~28", t:"서류접수 및 계약체결", m:"5일간 10:00~16:00, 거여2재정비촉진구역 1지구 청산조합 사무실. <b>계약금 전액 현금 필요.</b>", hot:true },
+    { d:"2026.09 예정", t:"잔금 납부 후 입주", m:"이전고시 완료 주택 — 잔금 완납해야 입주 가능. <b>잔금 70%를 한 달 안에 마련해야 합니다.</b>", hot:true },
+    { d:"취득일 +60일", t:"취득세 신고·납부", m:"부동산거래신고는 계약일부터 30일 이내(자금조달계획서·입주계획서 포함)." }
+  ],
+
+  eligItems: [
+    { key:"resid", q:"공고일(2026.08.10) 현재 서울특별시에 거주 중인가요?", hint:"주민등록표등본 기준. 거주기간 요건은 없고 '거주 사실'만 봅니다.",
+      opts:[{l:"예",ok:true},{l:"아니오",ok:false}] },
+    { key:"nohouse", q:"무주택세대주인가요?", hint:"세대원 전원이 무주택이고, 그중 본인이 세대주. 배우자 분리세대면 배우자 쪽 세대원도 무주택이어야 합니다.",
+      opts:[{l:"예",ok:true},{l:"아니오",ok:false}] },
+    { key:"bunyang", q:"세대 내에 분양권·입주권을 보유한 사람이 있나요?", hint:"2018.12.11 이후 계약분 분양권등은 주택 소유로 봅니다.",
+      opts:[{l:"없음",ok:true},{l:"있음",ok:false}] },
+    { key:"age", q:"만 19세 이상인가요?", hint:"미성년자는 자녀양육·형제자매부양 세대주만 가능. 외국인은 신청 불가.",
+      opts:[{l:"예 (또는 세대주인 미성년자)",ok:true},{l:"아니오",ok:false}] },
+    { key:"redup", q:"본인 또는 배우자가 재당첨 제한 기간 중인가요?", hint:"투기과열지구 당첨 시 10년. 제한 기간 중이면 신청 불가.",
+      opts:[{l:"아니오",ok:true},{l:"예",ok:false}] },
+    { key:"limit", q:"공급질서 교란·전매제한 위반 제재기간, 또는 부적격 당첨 제한기간 중인가요?", hint:"「주택공급에 관한 규칙」 제56조·제58조.",
+      opts:[{l:"아니오",ok:true},{l:"예",ok:false}] },
+    { key:"abroad", q:"공고일 기준 계속하여 90일을 초과해 해외에 체류 중인가요?", hint:"90일 초과 체류는 국내거주로 인정되지 않습니다(생업 목적 신청자 본인 체류는 예외).",
+      opts:[{l:"아니오",ok:true},{l:"예",ok:false}] },
+    { key:"dupapply", q:"당첨자 발표일이 같은 다른 주택(APT·불법행위재공급·규제지역 무순위)에 중복 신청했나요?", hint:"1인 1건만 유효. 2건 이상이면 모두 무효·부적격 처리될 수 있습니다.",
+      opts:[{l:"아니오",ok:true},{l:"예",ok:false}] }
+  ]
+};
+/* ===================== PARAMS 끝 ===================== */
+
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const comma = n => Math.round(n).toLocaleString("ko-KR");
+  function wonText(won){
+    const neg = won<0; won=Math.abs(won);
+    const m=won/10000, eok=Math.floor(m/10000), rest=Math.round(m%10000);
+    let s;
+    if(eok>0) s = eok+"억"+(rest>0? " "+comma(rest)+"만원":"");
+    else s = comma(Math.round(m))+"만원";
+    return (neg?"−":"")+s;
+  }
+  const manText = m => wonText(m*10000);
+
+  // ---- header / footer ----
+  $("subText").textContent = PARAMS.unitDesc;
+  $("disclaimer").innerHTML = "<b>안내</b> · 기준 수치는 <b>"+PARAMS.complex+" "+PARAMS.type+" 입주자모집공고</b>("
+    + PARAMS.source + ") 원문에서 옮겼습니다. 대출 한도·LTV·스트레스 DSR·세율은 2026년 8월 공개된 정부 자료 기준이며 수시로 바뀝니다. "
+    + "실제 대출 가능액은 은행 사전 한도조회로, 취득세 과세표준(옵션 포함 여부)은 관할 구청 세무과로, 자격은 사업주체(02-409-4458)로 반드시 확인하세요. 본 계산은 참고용 추정치입니다.";
+
+  // ---- tabs ----
+  const tabs=document.querySelectorAll(".tab"), panels=document.querySelectorAll(".panel");
+  tabs.forEach(t=>t.addEventListener("click",()=>{
+    tabs.forEach(x=>x.setAttribute("aria-selected",x===t?"true":"false"));
+    panels.forEach(p=>p.setAttribute("data-active",p.dataset.tab===t.dataset.tab?"true":"false"));
+  }));
+  function stepper(id,cb){
+    const box=$(id);
+    box.addEventListener("click",e=>{
+      const b=e.target.closest("button"); if(!b) return;
+      box.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+      cb(b.dataset.v);
+    });
+  }
+
+  // ===== TAB1 자격 =====
+  const answers = {};
+  $("eligFields").innerHTML = PARAMS.eligItems.map(it=>{
+    answers[it.key] = it.opts[0].ok;
+    const opts = it.opts.map((o,i)=>`<button data-v="${o.ok?1:0}"${i===0?' aria-pressed="true"':''}>${o.l}</button>`).join("");
+    return `<label class="field"><span class="lab">${it.q} <span class="hint">${it.hint}</span></span>
+      <div class="stepper good" data-key="${it.key}">${opts}</div></label>`;
+  }).join("");
+  $("eligFields").querySelectorAll(".stepper").forEach(box=>{
+    box.addEventListener("click",e=>{
+      const b=e.target.closest("button"); if(!b) return;
+      box.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+      box.classList.toggle("good", b.dataset.v==="1");
+      answers[box.dataset.key] = b.dataset.v==="1";
+      renderElig();
+    });
+  });
+  function renderElig(){
+    const fails = PARAMS.eligItems.filter(it=>!answers[it.key]);
+    const pass = fails.length===0;
+    const rows = PARAMS.eligItems.map(it=>{
+      const ok = answers[it.key];
+      return `<div class="chk${ok?"":" bad"}"><span class="mk">${ok?"✓":"✗"}</span><span>${it.q.replace(/\?$/,"")}</span></div>`;
+    }).join("");
+    $("eligResult").innerHTML =
+      `<div class="eyebrow">신청자격 판정</div>`
+      +`<div class="big">${pass?"신청 가능":"신청 불가 "+fails.length+"건"}</div>`
+      +`<div class="verdict ${pass?"ok":"no"}">${pass
+          ? "✓ 8개 항목 모두 충족 — 경쟁이 있으면 추첨으로 1세대를 선정합니다"
+          : "✗ "+fails.map(f=>f.key==="resid"?"서울 거주":f.key==="nohouse"?"무주택세대주":f.key==="bunyang"?"분양권 보유":f.key==="age"?"연령":f.key==="redup"?"재당첨 제한":f.key==="limit"?"입주자자격 제한":f.key==="abroad"?"해외체류":"중복신청").join(" · ")+" 항목에서 걸립니다"}</div>`
+      +`<div class="checks">${rows}</div>`
+      +`<div class="note" style="margin-top:12px">${pass
+          ? "자격 확인은 <strong>당첨 이후 사업주체가 전산조회·제출서류로 검증</strong>합니다. 자격과 다르게 당첨된 사실이 확인되면 계약 불가와 일정기간 입주자선정 제한을 받습니다."
+          : "위 항목 중 하나라도 어긋나면 당첨되더라도 <strong>부적격 처리</strong>됩니다. 부적격 당첨자는 수도권·투기과열지역 기준 1년간 다른 분양주택의 입주자로 선정될 수 없습니다."}</div>`;
+  }
+
+  // ===== TAB2 자금 =====
+  let taxBase="all";
+  stepper("taxBase",v=>{taxBase=v;renderCash();});
+  ["useLoan","regFee"].forEach(id=>$(id).addEventListener("input",renderCash));
+
+  function acqTax(baseWon){
+    // 주택 유상취득 취득세: 6억 이하 1%, 6~9억 누진, 9억 초과 3%
+    const eok = baseWon/100000000;
+    let rate;
+    if(eok<=6) rate=0.01;
+    else if(eok<=9) rate=(eok*2/3-3)/100;
+    else rate=0.03;
+    const acq = baseWon*rate;
+    const edu = baseWon*(rate*0.5*0.2);   // 지방교육세
+    return { rate, acq, edu, total: acq+edu, farm: 0 };  // 85㎡ 이하 → 농특세 비과세
+  }
+
+  function cashModel(){
+    const optionVat = PARAMS.option*(1+PARAMS.optionVat);
+    const purchase = PARAMS.supply + optionVat;
+    const base = (taxBase==="all") ? purchase : PARAMS.supply;
+    const t = acqTax(base);
+    const reg = (+$("regFee").value||0)*10000;
+    const total = purchase + t.total + reg;
+    const loan = (+$("useLoan").value||0)*10000;
+    return { optionVat, purchase, t, reg, total, loan, own: total-loan };
+  }
+
+  function renderCash(){
+    const m = cashModel();
+    const pct = m.total? Math.min(100, m.loan/m.total*100) : 0;
+    $("cashResult").innerHTML =
+      `<div class="eyebrow">필요 현금 (자기자본)</div>`
+      +`<div class="big">${wonText(m.own)}</div>`
+      +`<div class="verdict ${m.own>700000000?"no":m.own>500000000?"warn":"ok"}">총 소요 ${wonText(m.total)} 중 대출 ${wonText(m.loan)} 제외</div>`
+      +`<div class="bar"><span style="width:${pct.toFixed(0)}%;background:var(--s2)"></span></div>`
+      +`<div class="barscale"><span>대출 ${pct.toFixed(0)}%</span><span>자기자본 ${(100-pct).toFixed(0)}%</span></div>`
+      +`<div class="note" style="margin-top:10px">공급금액 ${wonText(PARAMS.supply)}에 옵션(VAT 포함) ${wonText(m.optionVat)}과 취득세·등기비를 더한 실제 매입 총액 기준입니다.</div>`;
+
+    $("k_supply").textContent = wonText(PARAMS.supply);
+    $("k_option").textContent = wonText(m.optionVat);
+    $("k_taxrate").textContent = "("+(m.t.rate*100).toFixed(1)+"% + "+(m.t.rate*0.5*0.2*100).toFixed(1)+"%)";
+    $("k_tax").textContent = wonText(m.t.total);
+    $("k_reg").textContent = wonText(m.reg);
+    $("k_total").textContent = wonText(m.total);
+    $("k_loan").textContent = wonText(m.loan);
+    $("k_own").textContent = wonText(m.own);
+
+    const step1 = PARAMS.supply*PARAMS.pay.contract + m.optionVat*PARAMS.pay.contract;
+    const step2 = PARAMS.supply*PARAMS.pay.balance + m.optionVat*PARAMS.pay.balance;
+    $("k_step1").textContent = wonText(step1);
+    $("k_step2").textContent = wonText(step2)+" (대출 가능)";
+    $("k_step3").textContent = wonText(m.t.total+m.reg);
+
+    $("cashFlag").innerHTML =
+      "<b>여기가 실제 관문입니다.</b> 당첨자 발표(2026.08.21) 다음 영업일부터 계약이 시작돼 <b>"+wonText(step1)
+      +"</b>을 사흘 안에 현금으로 넣어야 합니다. 계약금은 대출 대상이 아니고, 중도금 없이 잔금 70%가 곧바로 이어집니다. "
+      +"옵션 금액은 부가세 10%를 가산해 <b>공급·옵션 항목을 나눠서</b> 지정 계좌(하나은행 152-910020-78904, 예금주 거여2재정비촉진구역1지구주택재개발정비사업조합)에 입금해야 합니다.";
+
+    if(document.getElementById("g_gap")) renderGap();
+  }
+
+  // ===== TAB3 대출 =====
+  let basis="market";
+  stepper("basis",v=>{basis=v;renderLoan();});
+  ["income","debt","rate","years","ltv"].forEach(id=>$(id).addEventListener("input",renderLoan));
+
+  function pv(payment, r, n){ if(n<=0) return 0; if(r<=0) return payment*n; const f=Math.pow(1+r,n); return payment*(f-1)/(r*f); }
+  function pmt(P, r, n){ if(n<=0) return 0; if(r<=0) return P/n; const f=Math.pow(1+r,n); return P*r*f/(f-1); }
+  function capFor(price){ for(const [upTo,amt] of PARAMS.loan.capTable){ if(price<=upTo) return amt; } return 200000000; }
+
+  function renderLoan(){
+    const optionVat = PARAMS.option*(1+PARAMS.optionVat);
+    const purchase = PARAMS.supply + optionVat;
+    const collateral = (basis==="market") ? PARAMS.market : purchase;
+    const ltv=+$("ltv").value||0, years=+$("years").value||0, rate=+$("rate").value||0;
+    const income=(+$("income").value||0)*10000, debt=(+$("debt").value||0)*10000;
+
+    const ltvLimit = collateral*ltv/100;
+    const capLimit = capFor(PARAMS.market);   // 한도 캡은 주택 '시가' 기준
+    const stressRate = (rate+PARAMS.loan.stress)/100/12;
+    const room = Math.max(0, income*PARAMS.loan.dsr/100 - debt)/12;
+    const dsrLimit = pv(room, stressRate, years*12);
+
+    const gates = [
+      { k:"LTV "+ltv+"%", v:ltvLimit, note:(basis==="market"?"시세":"취득가")+" "+wonText(collateral)+" 기준" },
+      { k:"시가별 한도 캡", v:capLimit, note:"시가 "+wonText(PARAMS.market)+" → 15억 초과~25억 이하 구간" },
+      { k:"스트레스 DSR", v:dsrLimit, note:"연소득 "+wonText(income)+" · DSR "+PARAMS.loan.dsr+"% · 산정금리 "+(rate+PARAMS.loan.stress).toFixed(1)+"%" }
+    ];
+    const min = Math.min(...gates.map(g=>g.v));
+    const bindIdx = gates.findIndex(g=>g.v===min);
+    // 실제 대출은 매입가를 넘을 수 없음
+    const finalLoan = Math.min(min, purchase);
+    const monthly = pmt(finalLoan, rate/100/12, years*12);
+
+    $("ltvHint").textContent = "수도권 규제지역 무주택 기준 40%";
+    $("gates").innerHTML = gates.map((g,i)=>
+      `<div class="gate${i===bindIdx?" bind":""}"><span class="gk">${g.k}</span><span class="note" style="flex:1">${g.note}</span><span class="gv">${wonText(g.v)}</span>${i===bindIdx?'<span class="tagx">← 구속</span>':''}</div>`
+    ).join("");
+
+    $("loanResult").innerHTML =
+      `<div class="eyebrow">예상 대출 한도 (3관문 중 최솟값)</div>`
+      +`<div class="big">${wonText(finalLoan)}</div>`
+      +`<div class="verdict ${bindIdx===2?"warn":"ok"}">${gates[bindIdx].k}에 걸립니다 · 월 상환 ${comma(monthly/10000)}만원 (실제 금리 ${rate}% 기준)</div>`
+      +`<div class="note" style="margin-top:10px">필요 자기자본은 취득세·등기비를 빼고도 약 <strong>${wonText(purchase-finalLoan)}</strong>. `
+      +(bindIdx===2
+        ? `소득이 한도를 누르고 있습니다. 캡(${wonText(capLimit)})을 다 쓰려면 부부합산 연소득이 <strong>약 8,400만원</strong> 이상이어야 합니다(30년·4.5%·기존 대출 없음 기준).`
+        : `<strong>스트레스 금리는 한도 계산용 가상 금리</strong>일 뿐, 실제로 내는 이자는 약정 금리(${rate}%)입니다.`)
+      +`</div>`;
+
+    $("loanNote").innerHTML =
+      "<strong>송파구는 투기과열지구·조정대상지역입니다.</strong> 무주택자 LTV 40%가 적용되고, 주택 시가가 15억원을 넘으므로 주택구입 목적 주담대는 <strong>최대 4억원</strong>으로 캡이 걸립니다. "
+      +"수도권·규제지역 주담대에는 스트레스 금리 하한 3.0%p가 붙어 같은 소득이라도 한도가 줄어듭니다. 또한 규제지역 주담대를 받으면 <strong>6개월 내 전입 의무</strong>가 발생합니다 — 잔금을 전세보증금으로 메우는 방식은 쓸 수 없습니다. "
+      +"담보가치를 시세로 볼지 취득가로 볼지는 은행마다 다르지만, 이 물건은 어느 쪽이든 결과가 4억원 안팎에서 수렴합니다.";
+
+    $("useLoan").value = Math.round(finalLoan/10000);
+    renderCash();
+  }
+
+  // ===== TAB4 일정·차익 =====
+  $("timeline").innerHTML = PARAMS.schedule.map(s=>
+    `<div class="tl${s.hot?" hot":""}"><span class="dot"></span><div class="tlb">
+      <div class="tld">${s.d}</div><div class="tlt">${s.t}</div><div class="tlm">${s.m}</div></div></div>`).join("");
+  $("market").value = Math.round(PARAMS.market/10000);
+  $("market").addEventListener("input",renderGap);
+  function renderGap(){
+    const mk=(+$("market").value||0)*10000;
+    const m=cashModel();
+    const gap=mk-m.total;
+    $("gapResult").innerHTML =
+      `<div class="eyebrow">시세 − 총 소요자금 (단순 차액)</div>`
+      +`<div class="big">${wonText(gap)}</div>`
+      +`<div class="verdict ${gap>0?"ok":"no"}">시세 ${wonText(mk)} 기준 · 세후 수익 아님</div>`
+      +`<div class="note" style="margin-top:10px">2019년 최초 분양가에 주택유지 제세공과금·관리비·재분양공고비 ${wonText(PARAMS.supplyParts.resale)}만 얹어 공급되기 때문에 생기는 차이입니다. 대지비·건축비는 <strong>2019년 계약서 금액 그대로</strong> 반영되고 상승분이 붙지 않았습니다.</div>`;
+    $("g_market").textContent=wonText(mk);
+    $("g_cost").textContent=wonText(m.total);
+    $("g_gap").textContent=wonText(gap);
+  }
+
+  $("schedFlag").innerHTML =
+    "<b>공고문의 상충되는 표기 하나</b> — 단지 주요정보 표에 <b>거주의무기간 3년</b>으로 적혀 있으나, 같은 표에서 <b>분양가상한제는 '미적용'</b>입니다. "
+    +"「주택법」 제57조의2의 거주의무는 분양가상한제 적용주택에 붙는 규제이므로 두 표기가 서로 맞지 않습니다. "
+    +"거주의무 여부는 자금계획을 통째로 바꾸는 항목이니, 신청 전에 <b>사업주체(02-409-4458)</b>에 반드시 확인하세요. "
+    +"참고로 전매제한은 최초 당첨자 발표일(2019.09.17)로부터 3년이 경과해 이미 도과했습니다.";
+
+  // init
+  renderElig(); renderLoan(); renderGap();
+})();
+</script>
+
+<!-- 방문 통계(GoatCounter). GC_CODE에 본인 코드를 넣으면 켜지고, 비워두면 아무 동작도 하지 않습니다. -->
+<script>
+var GC_CODE = "";
+if(GC_CODE){
+  var _gc = document.createElement("script");
+  _gc.async = true;
+  _gc.src = "https://gc.zgo.at/count.js";
+  _gc.setAttribute("data-goatcounter", "https://" + GC_CODE + ".goatcounter.com/count");
+  document.body.appendChild(_gc);
+}
+</script>
+</body>
+</html>
