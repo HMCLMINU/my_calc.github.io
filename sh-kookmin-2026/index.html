@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026년 SH 국민임대 계산기</title>
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:22px 0 18px;background:#ecebe4;padding:5px;border-radius:12px}
+  .tab{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:12.5px;padding:10px 4px;
+    border-radius:8px;color:var(--ink-soft);background:transparent;transition:all .18s ease}
+  .tab .n{display:block;font-size:9px;letter-spacing:.08em;opacity:.6;font-weight:800;margin-bottom:2px}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel[data-active="true"]{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  label.field{display:block;margin-bottom:16px}
+  label.field:last-child{margin-bottom:0}
+  .field .lab{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .stepper{display:flex;gap:8px;flex-wrap:wrap}
+  .stepper button{flex:1 1 44px;min-width:44px;cursor:pointer;border:1px solid var(--line);background:#fbfbf9;
+    border-radius:9px;font:inherit;font-weight:700;font-size:13px;padding:9px 4px;color:var(--ink);transition:all .15s ease}
+  .stepper button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  .stepper.col{flex-direction:column}
+  .stepper.col button{text-align:left;padding:11px 13px}
+  input[type=number]{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  input[type=range]{width:100%;accent-color:var(--seal)}
+  input:focus,.stepper button:focus-visible,.tab:focus-visible,select:focus{outline:2px solid var(--seal);outline-offset:1px}
+  select{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  .inline{display:flex;align-items:center;gap:8px}
+  .inline input{text-align:right}
+  .unit{color:var(--ink-soft);font-weight:700;font-size:13px;white-space:nowrap}
+  .result{border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid var(--line);background:var(--card)}
+  .result .eyebrow{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--ink-soft);text-transform:uppercase}
+  .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+  .big small{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .verdict{font-size:14px;font-weight:700}
+  .verdict.ok{color:var(--ok)}.verdict.warn{color:var(--warn)}.verdict.no{color:var(--seal)}
+  .bar{height:12px;border-radius:99px;background:#ececec;overflow:hidden;margin:12px 0 6px}
+  .bar>span{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+  .barscale{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);font-weight:700}
+  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px;gap:10px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft);font-weight:600}.kv .v{font-weight:800;text-align:right}
+  .scorebreak{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+  .srow{display:flex;align-items:center;font-size:13px;gap:8px}
+  .srow .sk{color:var(--ink-soft);font-weight:600;flex:1}
+  .srow .sv{font-weight:800;white-space:nowrap}
+  .srow .sbar{flex:none;width:70px;height:7px;border-radius:99px;background:#ececec;overflow:hidden}
+  .srow .sbar>span{display:block;height:100%;background:var(--gold)}
+  .note{font-size:12px;color:var(--ink-soft);line-height:1.55}
+  .note strong{color:var(--ink)}
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .links{font-size:12.5px;line-height:1.9;margin-bottom:14px}
+  .links a{color:var(--seal);font-weight:700;text-decoration:none}
+  .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:#fbfaf6;border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+  .disclaimer b{color:var(--seal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate" id="plateText">🏠 국민임대 청약 계산기</span>
+    <h1>2026년 SH 국민임대<br><span class="accent">소득·자산·배점·임대료</span> 확인</h1>
+    <p class="sub" id="subText"></p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="income"><span class="n">1</span>소득자격</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="asset"><span class="n">2</span>자산</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="score"><span class="n">3</span>배점</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="rent"><span class="n">4</span>임대료</button>
+  </div>
+
+  <!-- TAB1 소득자격 -->
+  <section class="panel" data-tab="income" data-active="true">
+    <div class="card">
+      <label class="field">
+        <span class="lab">가구원수 <span class="hint">(무주택세대구성원 전원·태아 포함)</span></span>
+        <div class="stepper" id="hh"></div>
+      </label>
+      <label class="field">
+        <span class="lab">출산자녀 <span class="hint">(2023.3.28 이후 출생·입양·태아 / 소득·자산 가산)</span></span>
+        <div class="stepper" id="birth">
+          <button data-v="0" aria-pressed="true">없음</button>
+          <button data-v="1">1명</button>
+          <button data-v="2">2명 이상</button>
+        </div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">우리 세대 월평균 소득 <span class="hint">(세전 합산 / 만원)</span></span>
+        <div class="inline"><input type="number" id="income" inputmode="numeric" value="400"><span class="unit">만원 / 월</span></div>
+      </label>
+    </div>
+    <div class="card">
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">어느 순위로 신청하나요? <span class="hint">면적·순위마다 소득 상한이 다릅니다</span></span>
+        <div class="stepper col" id="tierPick">
+          <button data-v="pri" aria-pressed="true">50㎡ 미만 · 선순위 (소득 50%↓)</button>
+          <button data-v="gen">50㎡ 미만 · 후순위 (50% 초과~70%↓)</button>
+          <button data-v="large">50~60㎡(59형) (소득 70%↓)</button>
+        </div>
+      </label>
+    </div>
+    <div class="result" id="incomeResult"></div>
+    <div class="card">
+      <p class="note" id="tierNote"></p>
+      <div class="note" id="addNote" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <!-- TAB2 자산 -->
+  <section class="panel" data-tab="asset" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">우리 세대 총자산 <span class="hint">(부동산+금융+기타 − 부채 / 만원)</span></span>
+        <div class="inline"><input type="number" id="asset" inputmode="numeric" value="20000"><span class="unit">만원</span></div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">보유 자동차 가액 <span class="hint">(비영업용 승용차 중 최고가 1대 / 만원)</span></span>
+        <div class="inline"><input type="number" id="car" inputmode="numeric" value="2000"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="result" id="assetResult"></div>
+    <div class="card"><p class="note" id="assetNote"></p></div>
+  </section>
+
+  <!-- TAB3 배점 -->
+  <section class="panel" data-tab="score" data-active="false">
+    <div class="card">
+      <label class="field" style="margin-bottom:14px">
+        <span class="lab">배점표 종류</span>
+        <div class="stepper" id="scoreKind">
+          <button data-v="gen" aria-pressed="true">일반공급</button>
+          <button data-v="weak">주거약자용</button>
+        </div>
+      </label>
+      <p class="note" id="scoreIntro" style="margin-bottom:14px"></p>
+      <div id="scoreFields"></div>
+    </div>
+    <div class="result" id="scoreResult"></div>
+    <div class="card"><p class="note" id="scoreNote"></p></div>
+  </section>
+
+  <!-- TAB4 임대료 -->
+  <section class="panel" data-tab="rent" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">단지 선택 <span class="hint">(자치구별)</span></span>
+        <select id="cx"></select>
+      </label>
+      <label class="field">
+        <span class="lab">신청 유형(전용면적)</span>
+        <div class="stepper" id="unit"></div>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">보증금 ↔ 월세 상호전환 <span class="hint">(계약체결 후 신청 / 100만원 단위)</span></span>
+        <div class="stepper" id="convDir" style="margin-bottom:10px">
+          <button data-v="0" aria-pressed="true">기본조건</button>
+          <button data-v="up">보증금↑ 월세↓</button>
+          <button data-v="down">보증금↓ 월세↑</button>
+        </div>
+        <input type="range" id="convPct" min="0" max="60" step="5" value="60">
+        <div class="barscale"><span>0%</span><span id="convPctLabel">60%</span><span>최대 60%</span></div>
+      </label>
+    </div>
+    <div class="result" id="rentResult"></div>
+    <div class="card">
+      <div class="kv"><span class="k">기본 임대보증금</span><span class="v" id="baseDeposit">—</span></div>
+      <div class="kv"><span class="k">기본 월임대료</span><span class="v" id="baseRent">—</span></div>
+      <div class="kv"><span class="k">전환 후 보증금</span><span class="v" id="finalDeposit">—</span></div>
+      <div class="kv"><span class="k">전환 후 월임대료</span><span class="v" id="finalRent">—</span></div>
+      <div class="kv"><span class="k">계약금(보증금 20%)</span><span class="v" id="downpay">—</span></div>
+      <div class="kv"><span class="k">잔금(입주 시 80%)</span><span class="v" id="balance">—</span></div>
+    </div>
+    <div class="card"><p class="note" id="rentNote"></p></div>
+  </section>
+
+  <footer>
+    <div class="links">
+      🔗 <a href="../">계산기 전체 모음</a><br>
+      🔗 <a href="../policy/">전월세·정책대출 및 부동산 규제 총정리</a>
+    </div>
+    <div class="disclaimer" id="disclaimer"></div>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   PARAMS — 2026년 SH(서울주택도시개발공사) 국민임대주택 입주자모집공고
+   주택관리번호 2026-000379 / 모집공고일 2026.08.20. 원문 기준.
+   국민임대는 분양전환되지 않는 30년 이상 장기공공임대.
+   ============================================================ */
+const PARAMS = {
+  complex: "2026년 SH 국민임대주택 (38개 지구·단지)",
+  region: "서울특별시 13개 자치구 + 경기 의정부시",
+  source: "SH 서울주택도시개발공사 2026년 국민임대주택 입주자모집공고(2026.08.20., 관리번호 2026-000379)",
+
+  // 2025년도 도시근로자 가구원수별 가구당 월평균소득(원). 공고 25p 표 및 26~31p 선정표 원문 그대로.
+  // 50㎡미만 선순위: 3인이상 50% / 2인 60% / 1인 70%
+  // 50㎡미만 후순위 및 59㎡: 3인이상 70% / 2인 80% / 1인 90%
+  // 출산자녀(2023.3.28 이후) 1명 +10%p, 2명 이상(또는 1명+이전자녀) +20%p → 공고 표의 확정 금액을 그대로 사용.
+  incomeTable: {
+    hhKeys: [1,2,3,4,5,6],
+    // [출산자녀 0명, 1명, 2명이상] 순서. null = 공고 표에 금액 미표기(해당 조합 사실상 성립 불가).
+    pri: {
+      1: [2669354, null,    null],
+      2: [3519762, 4106389, null],
+      3: [4084215, 4901057, 5717900],
+      4: [4401101, 5281321, 6161541],
+      5: [4663493, 5596191, 6528890],
+      6: [4953132, 5943758, 6934384]
+    },
+    gen: {
+      1: [3432027, null,    null],
+      2: [4693016, 5279643, null],
+      3: [5717900, 6534743, 7351586],
+      4: [6161541, 7041762, 7921982],
+      5: [6528890, 7461588, 8394287],
+      6: [6934384, 7925010, 8915637]
+    },
+    tierLabel: { pri:"50㎡미만 선순위", gen:"50㎡미만 후순위", large:"59형(50~60㎡)" },
+    tierRatio: { pri:"3인 이상 50% (1인 70%·2인 60%)", gen:"3인 이상 70% (1인 90%·2인 80%)", large:"3인 이상 70% (1인 90%·2인 80%)" }
+  },
+
+  // 자산기준(원). 공고 25p. 출산자녀 가산 10%p/20%p.
+  assetTable: {
+    total: { 0:345000000, 1:379000000, 2:413000000 },
+    car:   { 0:45420000,  1:49960000,  2:54510000 }
+  },
+
+  // 배점표. 공고 33p(일반공급) / 32p(주거약자용).
+  score: {
+    gen: {
+      intro: "일반공급 동일순위 경쟁 시 배점입니다. 미성년 자녀 3명 이상인 신청자를 자녀 수 많은 순으로 먼저 선정하고, 그 다음 배점 합산 순위로 정합니다. 동점이면 전산추첨.",
+      items: [
+        { key:"age", label:"공급신청자 나이", hint:"만나이", options:[
+          {label:"50세 이상 (1976.08.20. 이전 출생)",points:3},
+          {label:"40세 이상 50세 미만",points:2},
+          {label:"30세 이상 40세 미만",points:1},
+          {label:"30세 미만",points:0}]},
+        { key:"family", label:"부양가족수", hint:"태아 포함·신청자 제외", options:[
+          {label:"3인 이상",points:3},{label:"2인",points:2},{label:"1인",points:1},{label:"0인",points:0}]},
+        { key:"resid", label:"서울시 연속거주기간", hint:"만19세 이후·최종전입일 기준", options:[
+          {label:"5년 이상 (2021.08.20. 이전 전입)",points:3},
+          {label:"3년 이상 5년 미만",points:2},
+          {label:"1년 이상 3년 미만",points:1},
+          {label:"1년 미만",points:0}]},
+        { key:"parent", label:"만65세 이상 직계존속 부양", hint:"공고일 현재 1년 이상 계속 부양", options:[
+          {label:"해당 없음",points:0},{label:"해당 (3점)",points:3}]},
+        { key:"kids", label:"미성년 자녀수", hint:"만19세 미만·태아 포함", options:[
+          {label:"3자녀 이상",points:3},{label:"2자녀",points:2},{label:"1자녀 이하",points:0}]},
+        { key:"bank", label:"청약종합저축 납입회차", hint:"공고일 현재 납입인정회차", options:[
+          {label:"60회 이상",points:3},{label:"48회 이상 60회 미만",points:2},
+          {label:"36회 이상 48회 미만",points:1},{label:"36회 미만",points:0}]},
+        { key:"sme", label:"중소기업 제조업체 근로자", hint:"임원 제외", options:[
+          {label:"해당 없음",points:0},{label:"해당 (3점)",points:3}]},
+        { key:"const", label:"건설근로자", hint:"1년 이상 퇴직공제부금 적립 또는 피보험자격 이력", options:[
+          {label:"해당 없음",points:0},{label:"해당 (3점)",points:3}]},
+        { key:"weak", label:"사회취약계층", hint:"생계·의료급여, 한부모, 국가유공자, 차상위 등 1개 항목만 인정", options:[
+          {label:"해당 없음",points:0},{label:"해당 (3점)",points:3}]},
+        { key:"minus", label:"국민임대 계약 이력 감점", hint:"2011.11.04. 이후 계약자", options:[
+          {label:"해당 없음",points:0},{label:"공고일 기준 5년 이내 계약 (-3점)",points:-3},
+          {label:"공고일 기준 3년 이내 계약 (-5점)",points:-5}]}
+      ]
+    },
+    weak: {
+      intro: "주거약자용 주택(고령자·장애인·국가유공자 등) 배점입니다. 저층(1~3층)에 배치되며 주거약자 자격자만 신청할 수 있습니다. 일반공급으로 신청하면 주거약자주택으로는 공급되지 않습니다.",
+      items: [
+        { key:"family", label:"부양가족수", hint:"태아 포함·신청자 제외", options:[
+          {label:"3인 이상",points:3},{label:"2인",points:2},{label:"1인",points:1},{label:"0인",points:0}]},
+        { key:"resid", label:"서울시 연속거주기간", hint:"만19세 이후", options:[
+          {label:"5년 이상",points:3},{label:"3년 이상 5년 미만",points:2},
+          {label:"1년 이상 3년 미만",points:1},{label:"1년 미만",points:0}]},
+        { key:"welfare", label:"사회취약계층", hint:"세대원 전원 해당", options:[
+          {label:"해당 없음",points:0},{label:"차상위계층 또는 생계·의료급여 이외 수급자 (1점)",points:1},
+          {label:"생계급여 또는 의료급여 수급자 (2점)",points:2}]},
+        { key:"bank", label:"청약종합저축 납입회차", hint:"납입인정회차", options:[
+          {label:"60회 이상",points:3},{label:"48회 이상 60회 미만",points:2},
+          {label:"36회 이상 48회 미만",points:1},{label:"36회 미만",points:0}]},
+        { key:"disab", label:"장애정도", hint:"세대원 전원 해당", options:[
+          {label:"해당 없음",points:0},{label:"장애의 정도가 심하지 않은 장애인 (1점)",points:1},
+          {label:"장애의 정도가 심한 장애인 (2점)",points:2}]},
+        { key:"minus", label:"국민임대 계약 이력 감점", hint:"2011.11.04. 이후 계약자", options:[
+          {label:"해당 없음",points:0},{label:"5년 이내 계약 (-3점)",points:-3},{label:"3년 이내 계약 (-5점)",points:-5}]}
+      ]
+    }
+  },
+
+  // 임대조건. 공고 11~21p. 금액은 원 단위(공고 천원 표기 ×1,000). [최저, 최고] 범위.
+  rent: {
+    contractPct: 20,        // 계약금 = 임대보증금의 20%
+    depToRentRate: 2.5,     // 보증금 → 월임대료 전환이율(연 2.5%), 보증금의 60%까지
+    rentToDepRate: 6.7,     // 월임대료 → 보증금 전환이율(연 6.7%), 임대료의 60%까지
+    maxConvPct: 60,
+    complexes: [
+      {gu:"강남구", name:"세곡2지구 3단지 · 레미안포레", units:{"49":{d:[54800000,54800000],r:[384200,384200]}}},
+      {gu:"강남구", name:"세곡2지구 4단지 · 강남한양수자인", units:{"49":{d:[56420000,56420000],r:[394100,394100]},"59":{d:[66560000,66560000],r:[443200,443200]}}},
+      {gu:"강남구", name:"세곡2지구 6단지 · 강남한신휴플러스6", units:{"39":{d:[41590000,41590000],r:[303000,303000]},"49":{d:[63910000,63910000],r:[407400,407400]}}},
+      {gu:"강남구", name:"세곡2지구 8단지 · 강남한신휴플러스8", units:{"59":{d:[98440000,98440000],r:[514700,514700]}}},
+      {gu:"강남구", name:"세곡지구 · 신동아파밀리에/세곡리엔파크/데시앙", units:{"39":{d:[30890000,32820000],r:[261900,277900]},"49":{d:[46140000,49800000],r:[342000,367900]},"59":{d:[54680000,59590000],r:[387500,406900]}}},
+      {gu:"강동구", name:"강동권역 강일지구 · 강일리버파크 1~10", units:{"39":{d:[30520000,30520000],r:[237400,237400]},"49":{d:[41570000,41570000],r:[275600,275600]},"59":{d:[49800000,64150000],r:[321200,370100]}}},
+      {gu:"강동구", name:"강일2지구 · 고덕리엔파크 1~3", units:{"49":{d:[43810000,44420000],r:[313600,324000]},"59":{d:[51570000,52380000],r:[355300,363800]}}},
+      {gu:"강동구", name:"고덕강일2지구 · 강동리버스트 4·6·7·8", units:{"29":{d:[18500000,19210000],r:[182200,190600]},"39":{d:[35890000,37050000],r:[251500,264100]},"49":{d:[54420000,54620000],r:[330100,333100]}}},
+      {gu:"강동구", name:"고덕강일3지구 · 강동리엔파크 9·14", units:{"29":{d:[18470000,20610000],r:[180000,202400]},"39":{d:[35570000,39350000],r:[249700,273100]},"49":{d:[54310000,54310000],r:[328700,328700]}}},
+      {gu:"강동구", name:"고덕강일지구 13단지 · 강동리엔파크13", units:{"39":{d:[37490000,37490000],r:[265800,265800]},"49":{d:[54880000,54880000],r:[333500,333500]}}},
+      {gu:"강동구", name:"고덕온빛채", units:{"49":{d:[60280000,60280000],r:[385600,385600]}}},
+      {gu:"강서구", name:"마곡지구 · 마곡엠밸리 1~15(9단지 제외) [주거약자]", units:{"49":{d:[55640000,64670000],r:[379800,420600]},"59":{d:[57700000,75250000],r:[376400,464500]}}},
+      {gu:"강서구", name:"마곡지구 9단지 · 마곡엠밸리9 [주거약자]", units:{"49":{d:[57990000,57990000],r:[319300,319300]}}},
+      {gu:"강서구", name:"발산지구 · 마곡수명산파크 1~7", units:{"59":{d:[40020000,43230000],r:[293200,321700]}}},
+      {gu:"구로구", name:"천왕지구 · 천왕이펜하우스 1~6", units:{"39":{d:[28750000,35480000],r:[249700,287100]},"49":{d:[43710000,49120000],r:[325400,349800]},"59":{d:[51900000,59930000],r:[366600,394100]}}},
+      {gu:"구로구", name:"천왕2지구 · 천왕연지타운 1·2", units:{"39":{d:[41540000,41540000],r:[293000,293000]},"49":{d:[54390000,61900000],r:[346500,372700]},"59":{d:[65140000,76450000],r:[395800,446700]}}},
+      {gu:"구로구", name:"항동지구 · 항동하버라인 2·3·4·8", units:{"39":{d:[34430000,37890000],r:[253700,270100]},"49":{d:[51650000,58370000],r:[322500,351700]},"59":{d:[59740000,66440000],r:[377900,397600]}}},
+      {gu:"노원구", name:"상계보금자리지구 · 중계센트럴파크 [주거약자]", units:{"49":{d:[63850000,63850000],r:[377200,377200]}}},
+      {gu:"노원구", name:"상계장암지구(3·4단지) · 수락리버시티3·4", units:{"39":{d:[29680000,29680000],r:[232100,232100]}}},
+      {gu:"마포구", name:"상암2지구 · 상암월드컵파크 9~12", units:{"39":{d:[32200000,32200000],r:[256500,256500]},"49":{d:[47400000,54340000],r:[328300,337800]},"59":{d:[57020000,65090000],r:[378100,386000]}}},
+      {gu:"서초구", name:"내곡지구 · 서초포레스타 2·6", units:{"39":{d:[35060000,35060000],r:[301600,301600]},"49":{d:[53090000,66240000],r:[391900,426100]}}},
+      {gu:"서초구", name:"우면2지구 다세대 · 네이처힐가든", units:{"46":{d:[64600000,64600000],r:[381800,381800]}}},
+      {gu:"서초구", name:"우면2지구 · 서초네이처힐 2~7", units:{"39":{d:[30700000,41490000],r:[254700,279400]},"49":{d:[44120000,52600000],r:[311700,352400]},"59":{d:[52450000,72610000],r:[353900,405400]}}},
+      {gu:"성동구", name:"마장동 임대아파트 · 마장동 에스에이치빌", units:{"39":{d:[20880000,20880000],r:[267000,267000]},"49":{d:[32660000,32660000],r:[329000,329000]}}},
+      {gu:"성북구", name:"장월1 · 장월 에스에이치빌 1단지", units:{"39":{d:[14490000,14490000],r:[218300,218300]}}},
+      {gu:"송파구", name:"마천지구 · 송파파크데일 1·2", units:{"39":{d:[30790000,31710000],r:[248800,255000]},"49":{d:[45160000,46360000],r:[319700,326600]},"59":{d:[53650000,55760000],r:[361200,375000]}}},
+      {gu:"송파구", name:"오금지구 · 송파레미니스 1·2", units:{"39":{d:[38570000,38650000],r:[246500,255900]},"49":{d:[58090000,58090000],r:[325700,325700]},"59":{d:[71520000,71520000],r:[398300,398300]}}},
+      {gu:"송파구", name:"위례포레샤인 13단지", units:{"39":{d:[42580000,42580000],r:[271900,271900]},"59":{d:[75350000,75350000],r:[403000,403000]}}},
+      {gu:"송파구", name:"위례포레샤인 23단지", units:{"39":{d:[42610000,42610000],r:[260700,260700]},"49":{d:[63670000,63670000],r:[332500,332500]}}},
+      {gu:"송파구", name:"장지지구 · 송파파인타운 2~11", units:{"39":{d:[28600000,29610000],r:[240500,245700]},"49":{d:[39070000,47150000],r:[276000,302500]},"59":{d:[49580000,61070000],r:[335000,369400]}}},
+      {gu:"양천구", name:"신정3지구 · 신정이펜하우스 1~5", units:{"49":{d:[40070000,49870000],r:[303800,350800]},"59":{d:[47150000,58640000],r:[344000,394100]}}},
+      {gu:"양천구", name:"신정4지구 · 신정숲속마을", units:{"39":{d:[28320000,28320000],r:[236600,236600]}}},
+      {gu:"은평구", name:"은평1지구 · 상림마을 6-1~8-3", units:{"39":{d:[29840000,29840000],r:[219000,219000]},"49":{d:[45920000,45920000],r:[275300,275300]},"59":{d:[62060000,79880000],r:[376500,457300]}}},
+      {gu:"은평구", name:"은평2지구 · 박석고개/마고정/우물골", units:{"39":{d:[29140000,30040000],r:[220300,226400]},"49":{d:[44840000,46190000],r:[276800,299600]},"59":{d:[57960000,69350000],r:[370300,418500]}}},
+      {gu:"은평구", name:"은평3지구 · 구파발 9-1·10-2·10-3", units:{"39":{d:[30930000,32220000],r:[222700,248300]},"49":{d:[47430000,47430000],r:[319200,319200]},"59":{d:[56190000,61390000],r:[360300,378000]}}},
+      {gu:"중랑구", name:"신내데시앙 [주거약자]", units:{"59":{d:[50800000,50800000],r:[326500,326500]}}},
+      {gu:"중랑구", name:"신내3지구 · 신내우디안1/신내데시앙포레 [주거약자]", units:{"49":{d:[48590000,49440000],r:[336300,350200]},"59":{d:[58540000,58860000],r:[386900,399300]}}},
+      {gu:"의정부시", name:"상계장암지구(1·2단지) · 수락리버시티1·2", units:{"39":{d:[27180000,27180000],r:[212400,212400]}}}
+    ]
+  }
+};
+/* ===================== PARAMS 끝 ===================== */
+
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const comma = n => Math.round(n).toLocaleString("ko-KR");
+  function wonText(won){
+    const m = won/10000, eok = Math.floor(m/10000), rest = Math.round(m%10000);
+    if(eok>0) return eok+"억 "+(rest>0? comma(rest)+"만원" : "");
+    return comma(Math.round(m))+"만원";
+  }
+  const manwonText = m => wonText(m*10000);
+
+  $("subText").textContent = "SH 2026년 국민임대 공고 기준 · 3초 확인";
+  $("disclaimer").innerHTML = "<b>안내</b> · 기준 수치는 <b>"+PARAMS.source+"</b> 원문 기준입니다. "
+    + "국민임대는 분양전환되지 않는 30년 이상 장기공공임대입니다. 소득·자산 가산, 배점, 임대조건은 공고차수·단지에 따라 달라지고 "
+    + "계약 시점에 임대조건이 변경될 수 있으니 <b>SH 인터넷청약시스템(www.i-sh.co.kr/app)</b>의 공고문에서 반드시 다시 확인하세요. 본 계산은 참고용 추정치입니다.";
+
+  const tabs=document.querySelectorAll(".tab"), panels=document.querySelectorAll(".panel");
+  tabs.forEach(t=>t.addEventListener("click",()=>{
+    tabs.forEach(x=>x.setAttribute("aria-selected",x===t?"true":"false"));
+    panels.forEach(p=>p.setAttribute("data-active",p.dataset.tab===t.dataset.tab?"true":"false"));
+  }));
+  function stepper(id,cb){
+    const box=$(id); if(!box) return;
+    box.addEventListener("click",e=>{
+      const b=e.target.closest("button"); if(!b) return;
+      box.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+      cb(b.dataset.v);
+    });
+  }
+
+  // ===== TAB1 소득자격 =====
+  const IT = PARAMS.incomeTable;
+  $("hh").innerHTML = IT.hhKeys.map((n,i)=>`<button data-v="${n}"${i===2?' aria-pressed="true"':''}>${n}인</button>`).join("");
+  let hh=3, birth=0, tier="pri";
+  stepper("hh",v=>{hh=+v;renderIncome();});
+  stepper("birth",v=>{birth=+v;renderIncome();renderAsset();});
+  stepper("tierPick",v=>{tier=v;renderIncome();});
+  $("income").addEventListener("input",renderIncome);
+
+  function capOf(tierKey,n,b){
+    const key = (tierKey==="pri") ? "pri" : "gen";   // 59형은 후순위와 같은 70% 기준선
+    const row = IT[key][n];
+    if(!row) return null;
+    if(row[b]!=null) return row[b];
+    // 공고 표에 금액이 없는 조합(1인가구+출산자녀 등) → 가산 없는 기본값으로 안내
+    return row[0];
+  }
+  function renderIncome(){
+    const incWon=(+$("income").value||0)*10000;
+    const cap=capOf(tier,hh,birth);
+    const pass = incWon>0 && incWon<=cap;
+    const fill = Math.min(100, cap? incWon/cap*100 : 0);
+    const tl = IT.tierLabel[tier];
+    let verdict,cls;
+    if(incWon<=0){verdict="소득을 입력하세요";cls="";}
+    else if(pass){verdict="✓ "+tl+" 소득자격 통과";cls="ok";}
+    else{verdict="✗ "+tl+" 소득 상한 초과";cls="no";}
+    const row=IT[(tier==="pri")?"pri":"gen"][hh];
+    const noTable = row && row[birth]==null && birth>0;
+    $("incomeResult").innerHTML=
+      `<div class="eyebrow">${hh}인 가구 · ${tl} 소득 상한</div>`
+      +`<div class="big">${wonText(cap)} <small>/ 월(세전)</small></div>`
+      +`<div class="verdict ${cls}">${verdict}</div>`
+      +`<div class="bar"><span style="width:${fill.toFixed(0)}%;background:${pass?"var(--ok)":"var(--seal)"}"></span></div>`
+      +`<div class="barscale"><span>0</span><span></span><span>상한 ${wonText(cap)}</span></div>`
+      +`<div class="note" style="margin-top:10px">기준선: ${IT.tierRatio[tier]}`
+      +(noTable? ` · <strong>이 가구원수·출산자녀 조합은 공고 표에 가산 금액이 표기돼 있지 않아 가산 전 금액으로 표시했습니다(태아·자녀는 가구원수에 포함되므로 사실상 성립하기 어려운 조합입니다).</strong>`:``)
+      +`</div>`;
+    $("tierNote").innerHTML = (tier==="large")
+      ? "<strong>59형(50~60㎡)</strong>은 소득 70% 이하 한 가지 기준이고, 순위는 <strong>청약종합저축 납입회차</strong>로 갈립니다. 24회 이상 = 선순위, 24회 미만·미가입 = 후순위(6회 이상 2순위 / 그 외 3순위). 선순위 신청자가 모집세대수의 200%를 넘으면 후순위 접수를 아예 받지 않습니다."
+      : "<strong>50㎡ 미만(29·39·46·49형)</strong>은 소득 50% 이하 세대에게 먼저 공급하고, 남은 주택이 있을 때만 50% 초과~70% 이하 세대에 공급합니다. 순위 경쟁은 <strong>거주지(해당구+연접구 1순위 → 그 외 서울시 2순위)</strong>로 먼저 갈립니다. 청약통장은 50㎡ 미만에서는 순위 요건이 아니지만 배점 항목으로는 들어갑니다.";
+    const bonusTxt = birth===1? "출산자녀 1명 → 기준선 +10%p" : birth===2? "출산자녀 2명 이상 → 기준선 +20%p" : "";
+    $("addNote").innerHTML = bonusTxt
+      ? `현재 가산: ${bonusTxt}. 2023.3.28. 이후 출생·입양·태아만 인정되며, 서류심사 때 가족관계증명서·입양관계증명서·임신진단서를 내야 인정됩니다.`
+      : `2023.3.28. 이후 출생한 자녀(태아·입양 포함)가 있으면 소득·자산 기준이 10~20%p 올라갑니다. 2023.3.27. 이전 출생 자녀만 있으면 가산되지 않습니다.`;
+  }
+
+  // ===== TAB2 자산 =====
+  ["asset","car"].forEach(id=>$(id).addEventListener("input",renderAsset));
+  function renderAsset(){
+    const totalCap=PARAMS.assetTable.total[birth], carCap=PARAMS.assetTable.car[birth];
+    const asset=(+$("asset").value||0)*10000, car=(+$("car").value||0)*10000;
+    const passA=asset<=totalCap, passC=car<=carCap, pass=passA&&passC;
+    $("assetResult").innerHTML=
+      `<div class="eyebrow">자산 기준 (출산자녀 ${birth===2?"2명 이상":birth+"명"} 반영)</div>`
+      +`<div class="big">${pass?"✓ 통과":"✗ 초과"}</div>`
+      +`<div class="verdict ${pass?"ok":"no"}">총자산 ${passA?"통과":"초과"} · 자동차 ${passC?"통과":"초과"}</div>`
+      +`<div class="note" style="margin-top:10px">총자산 상한 <strong>${wonText(totalCap)}</strong> / 자동차 상한 <strong>${wonText(carCap)}</strong>. `
+      +`우리 세대: 총자산 ${manwonText(+$("asset").value||0)}, 자동차 ${manwonText(+$("car").value||0)}.</div>`;
+    $("assetNote").innerHTML = "총자산은 부동산+자동차+금융자산+기타자산을 합한 금액에서 부채를 뺀 값입니다(기본 3억4,500만원). 자동차는 비영업용 승용차 중 <strong>가장 비싼 1대</strong>의 차량기준가액으로 판정합니다(기본 4,542만원). 장애인사용 자동차·국가유공자 보철용 차량은 제외되고, 저공해차는 보조금을 뺀 금액으로 봅니다. 출산자녀 가산 시 총자산 3억7,900만원(10%p)·4억1,300만원(20%p), 자동차 4,996만원·5,451만원까지 올라갑니다.";
+  }
+
+  // ===== TAB3 배점 =====
+  let kind="gen";
+  stepper("scoreKind",v=>{kind=v;buildScore();renderScore();});
+  function curSet(){return PARAMS.score[kind];}
+  function tierMax(){return curSet().items.reduce((s,it)=>s+Math.max(...it.options.map(o=>o.points)),0);}
+  function buildScore(){
+    const set=curSet();
+    $("scoreIntro").innerHTML = set.intro;
+    $("scoreFields").innerHTML = set.items.map(it=>{
+      const opts=it.options.map((o,i)=>`<option value="${o.points}"${i===0?" selected":""}>${o.label}${o.points>0?" — "+o.points+"점":""}</option>`).join("");
+      const hint=it.hint?`<span class="hint">${it.hint}</span>`:"";
+      return `<label class="field"><span class="lab">${it.label} ${hint}</span><select data-key="${it.key}">${opts}</select></label>`;
+    }).join("");
+    $("scoreFields").querySelectorAll("select").forEach(s=>s.addEventListener("change",renderScore));
+    $("scoreNote").innerHTML = kind==="gen"
+      ? "국민임대 자체 배점표이며 민영주택 84점 가점제와 다릅니다. 신청서에 <strong>본인이 직접 기재한 값</strong>을 기준으로 모집세대수의 200% 내외를 서류심사 대상자로 뽑고, 이후 서류로 검증합니다. 사실보다 유리하게 적으면 감점·결격·당첨취소가 되고, 불리하게 적어도 나중에 올려주지 않습니다."
+      : "주거약자용 주택은 욕실 미닫이문·단차 제거·낮은 스위치 등을 갖춘 저층 주택으로, 고령자(만65세 이상)·장애인·국가유공자 등만 신청할 수 있습니다. 일반공급으로 신청하면 주거약자 자격이 있어도 주거약자주택으로 공급되지 않으니 청약 단계에서 유형을 정확히 골라야 합니다.";
+  }
+  function renderScore(){
+    const set=curSet(), items=set.items, max=tierMax();
+    const selects=$("scoreFields").querySelectorAll("select");
+    let total=0; const rows=[];
+    selects.forEach((s,i)=>{const p=+s.value;total+=p;rows.push([items[i].label,p,Math.max(...items[i].options.map(o=>o.points))]);});
+    const pctFull=Math.max(0,total)/max*100;
+    const grade=pctFull>=70?["상위권","ok"]:pctFull>=40?["중위권 — 동점 추첨 대비","warn"]:["하위권 — 상향 여지 큼","no"];
+    const breakdown=rows.filter(r=>r[2]>0).map(r=>`<div class="srow"><span class="sk">${r[0]}</span><span class="sbar"><span style="width:${Math.max(0,r[1])/r[2]*100}%"></span></span><span class="sv">${r[1]} / ${r[2]}</span></div>`).join("");
+    const minusRow=rows.find(r=>r[2]<=0 && r[1]<0);
+    $("scoreResult").innerHTML=
+      `<div class="eyebrow">${kind==="gen"?"일반공급":"주거약자용"} 예상 배점</div>`
+      +`<div class="big">${total} <small>/ ${max}점</small></div>`
+      +`<div class="verdict ${grade[1]}">${grade[0]}${minusRow?` · 감점 ${minusRow[1]}점 반영`:""}</div>`
+      +`<div class="scorebreak">${breakdown}</div>`;
+  }
+
+  // ===== TAB4 임대료 =====
+  const CX=PARAMS.rent.complexes;
+  (function buildSelect(){
+    let html="", lastGu="";
+    CX.forEach((c,i)=>{
+      if(c.gu!==lastGu){ if(lastGu) html+="</optgroup>"; html+=`<optgroup label="${c.gu}">`; lastGu=c.gu; }
+      html+=`<option value="${i}">${c.name}</option>`;
+    });
+    html+="</optgroup>";
+    $("cx").innerHTML=html;
+  })();
+  let cxIdx=0, unit=null, dir="0", convPct=60;
+  $("cx").addEventListener("change",()=>{cxIdx=+$("cx").value;buildUnits();renderRent();});
+  stepper("convDir",v=>{dir=v;renderRent();});
+  $("convPct").addEventListener("input",()=>{convPct=+$("convPct").value;$("convPctLabel").textContent=convPct+"%";renderRent();});
+  function buildUnits(){
+    const keys=Object.keys(CX[cxIdx].units);
+    unit=keys[0];
+    $("unit").innerHTML=keys.map((k,i)=>`<button data-v="${k}"${i===0?' aria-pressed="true"':''}>${k}형</button>`).join("");
+  }
+  $("unit").addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    $("unit").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+    unit=b.dataset.v; renderRent();
+  });
+  function renderRent(){
+    const c=CX[cxIdx], u=c.units[unit];
+    const dep0=u.d[0], rent0=u.r[0];
+    const isRange = u.d[0]!==u.d[1];
+    const p=convPct/100;
+    let dep=dep0, rent=rent0, headline="";
+    if(dir==="up"){                     // 월임대료 → 보증금 (이율 6.7%)
+      const cut=rent0*p;
+      rent=rent0-cut;
+      dep=dep0+cut*12/(PARAMS.rent.rentToDepRate/100);
+      headline=`월임대료의 ${convPct}%를 보증금으로 전환`;
+    }else if(dir==="down"){             // 보증금 → 월임대료 (이율 2.5%)
+      const cut=dep0*p;
+      dep=dep0-cut;
+      rent=rent0+cut*(PARAMS.rent.depToRentRate/100)/12;
+      headline=`보증금의 ${convPct}%를 월임대료로 전환`;
+    }else{
+      headline="공고 기준 임대조건 (전환 없음)";
+    }
+    $("rentResult").innerHTML=
+      `<div class="eyebrow">${unit}형 · ${headline}</div>`
+      +`<div class="big">${comma(Math.round(rent/100)*100)}<small> 원 / 월</small></div>`
+      +`<div class="verdict ok">보증금 ${wonText(dep)}</div>`
+      +`<div class="note" style="margin-top:10px">`
+      +(isRange? `이 지구는 단지·타입별로 임대조건이 <strong>${wonText(u.d[0])}~${wonText(u.d[1])} / 월 ${comma(u.r[0])}~${comma(u.r[1])}원</strong> 범위입니다. 위 계산은 <strong>최저 조건</strong> 기준이며, 지구단위 공급이라 전산추첨으로 단지·동호가 정해진 뒤 실제 금액이 확정됩니다.`
+              : `공고에 단일 조건으로 표기된 단지입니다.`)
+      +`</div>`;
+    $("baseDeposit").textContent=wonText(dep0)+(isRange?` ~ ${wonText(u.d[1])}`:"");
+    $("baseRent").textContent=comma(rent0)+"원"+(isRange?` ~ ${comma(u.r[1])}원`:"");
+    $("finalDeposit").textContent=wonText(dep);
+    $("finalRent").textContent=comma(Math.round(rent/100)*100)+"원";
+    $("downpay").textContent=wonText(dep0*PARAMS.rent.contractPct/100);
+    $("balance").textContent=wonText(dep0*(100-PARAMS.rent.contractPct)/100);
+    $("rentNote").innerHTML="계약 시 <strong>기본 임대보증금의 20%</strong>를 계약금으로 내고 나머지 80%는 입주 시 냅니다. 상호전환은 <strong>계약 체결 후</strong> 주거안심종합센터에 신청하며 100만원 단위, 한 번 전환하면 1년 내 재신청 불가입니다. 전환 한도는 각각 60%이고 이율은 보증금→월세 2.5%, 월세→보증금 6.7%입니다(계약 시점 이율에 따라 변동 가능). 계약금·잔금은 전환 전 기본 보증금 기준으로 표시했으며, 전환 결과는 100원 단위 반올림이라 공고 표와 수백원 차이가 날 수 있습니다.";
+  }
+
+  buildUnits(); renderIncome(); renderAsset(); buildScore(); renderScore(); renderRent();
+})();
+</script>
+
+<!-- 방문 통계(GoatCounter). GC_CODE에 본인 코드를 넣으면 켜지고, 비워두면 아무 동작도 하지 않습니다. -->
+<script>
+var GC_CODE = "";
+if(GC_CODE){
+  var _gc = document.createElement("script");
+  _gc.async = true;
+  _gc.src = "https://gc.zgo.at/count.js";
+  _gc.setAttribute("data-goatcounter", "https://" + GC_CODE + ".goatcounter.com/count");
+  document.body.appendChild(_gc);
+}
+</script>
+</body>
+</html>
