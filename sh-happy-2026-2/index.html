@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026년 2차 행복주택(SH) 계산기 — 소득·자산·배점·임대료</title>
+<meta name="description" content="서울주택도시개발공사 2026년 2차 행복주택 입주자모집(2026.08.28 공고) 기준 소득자격·자산·우선공급 배점·임대료 전환 계산기">
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:22px 0 18px;background:#ecebe4;padding:5px;border-radius:12px}
+  .tab{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:12.5px;padding:10px 4px;
+    border-radius:8px;color:var(--ink-soft);background:transparent;transition:all .18s ease}
+  .tab .n{display:block;font-size:9px;letter-spacing:.08em;opacity:.6;font-weight:800;margin-bottom:2px}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel[data-active="true"]{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  label.field{display:block;margin-bottom:16px}
+  label.field:last-child{margin-bottom:0}
+  .field .lab{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .stepper{display:flex;gap:8px;flex-wrap:wrap}
+  .stepper button{flex:1 1 44px;min-width:44px;cursor:pointer;border:1px solid var(--line);background:#fbfbf9;
+    border-radius:9px;font:inherit;font-weight:700;font-size:13px;padding:9px 4px;color:var(--ink);transition:all .15s ease}
+  .stepper button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  .stepper.wide button{flex:1 1 100px}
+  input[type=number]{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  input:focus,.stepper button:focus-visible,.tab:focus-visible,select:focus{outline:2px solid var(--seal);outline-offset:1px}
+  select{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  .inline{display:flex;align-items:center;gap:8px}
+  .inline input{text-align:right}
+  .unit{color:var(--ink-soft);font-weight:700;font-size:13px;white-space:nowrap}
+  .result{border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid var(--line);background:var(--card)}
+  .result .eyebrow{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--ink-soft);text-transform:uppercase}
+  .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+  .big small{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .verdict{font-size:14px;font-weight:700}
+  .verdict.ok{color:var(--ok)}.verdict.warn{color:var(--warn)}.verdict.no{color:var(--seal)}
+  .bar{height:12px;border-radius:99px;background:#ececec;overflow:hidden;margin:12px 0 6px}
+  .bar>span{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+  .barscale{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);font-weight:700}
+  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px;gap:12px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft);font-weight:600}.kv .v{font-weight:800;text-align:right}
+  .scorebreak{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+  .srow{display:flex;align-items:center;font-size:13px;gap:8px}
+  .srow .sk{color:var(--ink-soft);font-weight:600;flex:1}
+  .srow .sv{font-weight:800}
+  .srow .sbar{flex:none;width:78px;height:7px;border-radius:99px;background:#ececec;overflow:hidden}
+  .srow .sbar>span{display:block;height:100%;background:var(--gold)}
+  .note{font-size:12px;color:var(--ink-soft);line-height:1.55}
+  .note strong{color:var(--ink)}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{font-size:11.5px;font-weight:700;border:1px solid var(--line);background:#fbfbf9;border-radius:99px;padding:5px 10px;color:var(--ink-soft)}
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:#fbfaf6;border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+  .disclaimer b{color:var(--seal)}
+  .backlink{display:block;text-align:center;margin-top:14px;font-size:12.5px;font-weight:700;color:var(--ink-soft);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate" id="plateText">🏠 행복주택 청약 계산기</span>
+    <h1>내 <span class="accent">소득·자산 자격</span>과<br>배점·임대료를 확인</h1>
+    <p class="sub" id="subText"></p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="income"><span class="n">1</span>소득자격</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="asset"><span class="n">2</span>자산</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="score"><span class="n">3</span>배점</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="rent"><span class="n">4</span>임대료</button>
+  </div>
+
+  <!-- TAB1 소득자격 -->
+  <section class="panel" data-tab="income" data-active="true">
+    <div class="card">
+      <label class="field">
+        <span class="lab">어느 계층으로 신청하나요? <span class="hint">계층마다 소득·자산 기준이 다릅니다</span></span>
+        <div class="stepper wide" id="tierPick"></div>
+      </label>
+      <label class="field">
+        <span class="lab">가구원수 <span class="hint">(무주택세대구성원 전원 · 태아 포함)</span></span>
+        <div class="stepper" id="hh"></div>
+      </label>
+      <label class="field" id="dualWrap">
+        <span class="lab">맞벌이 여부 <span class="hint">배우자에게 근로·사업소득이 있으면 상한이 올라갑니다</span></span>
+        <div class="stepper" id="dual">
+          <button data-v="0" aria-pressed="true">외벌이</button>
+          <button data-v="1">맞벌이</button>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lab">출생자녀 가산 <span class="hint">2023.3.28 이후 출생·입양·태아 기준</span></span>
+        <div class="stepper wide" id="birth">
+          <button data-v="0" aria-pressed="true">해당 없음</button>
+          <button data-v="1">이후 1명 (+10%p)</button>
+          <button data-v="2">이후 2명↑ 또는 이후1명+이전1명↑ (+20%p)</button>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lab">우리 가구 월평균 소득 <span class="hint">(세전 합산 / 만원)</span></span>
+        <div class="inline"><input type="number" id="income" inputmode="numeric" value="400"><span class="unit">만원 / 월</span></div>
+      </label>
+    </div>
+    <div class="result" id="incomeResult"></div>
+    <div class="card">
+      <p class="note" id="incomeNote"></p>
+      <div class="chips" id="incomeChips"></div>
+    </div>
+  </section>
+
+  <!-- TAB2 자산 -->
+  <section class="panel" data-tab="asset" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">우리 세대 총자산 <span class="hint">(부동산+자동차+금융+일반자산 − 부채 / 만원)</span></span>
+        <div class="inline"><input type="number" id="asset" inputmode="numeric" value="10000"><span class="unit">만원</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">보유 자동차 가액 <span class="hint">(보건복지부 차량기준가액 · 비영업용 승용 / 만원)</span></span>
+        <div class="inline"><input type="number" id="car" inputmode="numeric" value="1500"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="result" id="assetResult"></div>
+    <div class="card"><p class="note" id="assetNote"></p></div>
+  </section>
+
+  <!-- TAB3 배점 -->
+  <section class="panel" data-tab="score" data-active="false">
+    <div class="card">
+      <p class="note" style="margin-bottom:14px" id="scoreIntro"></p>
+      <div id="scoreFields"></div>
+    </div>
+    <div class="result" id="scoreResult"></div>
+    <div class="card"><p class="note" id="scoreNote"></p></div>
+  </section>
+
+  <!-- TAB4 임대료 -->
+  <section class="panel" data-tab="rent" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">단지 선택 <span class="hint">신규 2개 · 재공급 60여 개</span></span>
+        <select id="cx"></select>
+      </label>
+      <label class="field">
+        <span class="lab">공급구분 <span class="hint">계층·주택형별 임대조건</span></span>
+        <select id="ut"></select>
+      </label>
+      <label class="field" style="margin-bottom:0">
+        <span class="lab">보증금 ↔ 월세 전환 <span class="hint" id="convHint"></span></span>
+        <div class="inline"><span class="unit" style="min-width:74px">보증금 증액</span><input type="number" id="convUp" inputmode="numeric" value="0"><span class="unit">만원</span></div>
+        <div class="inline" style="margin-top:10px"><span class="unit" style="min-width:74px">보증금 감액</span><input type="number" id="convDown" inputmode="numeric" value="0"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="result" id="rentResult"></div>
+    <div class="card">
+      <div class="kv"><span class="k">기준 임대보증금</span><span class="v" id="baseDeposit">—</span></div>
+      <div class="kv"><span class="k">기준 월임대료</span><span class="v" id="baseRent">—</span></div>
+      <div class="kv"><span class="k">조정 후 보증금</span><span class="v" id="finalDeposit">—</span></div>
+      <div class="kv"><span class="k">조정 후 월임대료</span><span class="v" id="finalRent">—</span></div>
+      <div class="kv"><span class="k">계약금(보증금 20%)</span><span class="v" id="downpay">—</span></div>
+      <div class="kv"><span class="k">잔금(보증금 80%)</span><span class="v" id="balance">—</span></div>
+      <div class="kv"><span class="k">금회 모집호수</span><span class="v" id="cnt">—</span></div>
+    </div>
+    <div class="card"><p class="note" id="rentNote"></p></div>
+  </section>
+
+  <footer>
+    <div class="disclaimer" id="disclaimer"></div>
+    <a class="backlink" href="../">← 계산기 전체 모음</a>
+  </footer>
+</div>
+
+<script>
+/* ============================================================
+   PARAMS — 서울주택도시개발공사(SH) 2026년 2차 행복주택 입주자모집공고
+   공고일 2026.08.28 / 주택관리번호 2026-000428 / 총 1,484호
+   행복주택은 분양전환되지 않는 공공임대주택. 소득·자산 "이하" 자격 + 보증금/월세 상호전환.
+   숫자는 전부 공고 원문(4.신청자격, 3.공급현황, [별표1])에서 그대로 옮김.
+   ============================================================ */
+const PARAMS = {
+  complex: "2026년 2차 행복주택 (서울리츠 포함)",
+  region: "서울특별시 25개 자치구",
+  source: "SH 서울주택도시개발공사 공고 2026.08.28, 주택관리번호 2026-000428",
+  schedule: { apply:"2026.09.09~09.11", docs:"2026.09.28~09.30", win:"2027.01.29", contract:"2027.02.10~02.16" },
+
+  // ── 소득기준(원/월). 공고 <소득기준> 표 그대로.
+  // 1인 열에는 +20%p, 2인 열에는 +10%p 가산이 이미 반영되어 있음(공고 표 헤더 명시).
+  // 6인 이상은 5인 기준액에 1인당 가산액(add)을 더해 산정.
+  incomeRows: {
+    100:{1:4576036,2:6452897,3:8168429,4:8802202,5:9326985,add:579278},
+    110:{2:7039524,3:8985272,4:9682422,5:10259684,add:637205},
+    120:{2:7626151,3:9802115,4:10562642,5:11192382,add:695133},
+    130:{3:10618958,4:11442863,5:12125081,add:753061},
+    140:{4:12323083,5:13057779,add:810989}
+  },
+  hhKeys:[1,2,3,4,5,6,7],
+
+  // ── 계층 정의
+  tiers: {
+    univ:{ name:"대학생", short:"대학생·취준생", dual:false, incomeBase:100,
+      asset:{0:108000000,1:119000000,2:130000000}, car:{0:0,1:0,2:0}, carNone:true,
+      incomeNote:"대학생 계층은 <strong>신청자 본인과 부모의 소득 합계</strong>로 판정합니다(이혼 등으로 가족관계가 단절된 경우 실질 부양 중인 부 또는 모의 소득만 조회). 가구원수에는 본인·동일 등본상 직계존속·직계비속을 넣되, <strong>부모는 등본이 달라도 포함</strong>합니다.",
+      max:"최대 거주 10년" },
+    youth:{ name:"청년", short:"청년·사회초년생", dual:false, incomeBase:100,
+      asset:{0:251000000,1:276000000,2:301000000}, car:{0:45420000,1:49960000,2:54510000},
+      incomeNote:"청년 계층은 <strong>신청자가 세대주면 무주택세대구성원 전원</strong>, <strong>세대원이면 본인 소득만</strong> 봅니다. 소득이 없는 청년은 같은 단지·같은 면적의 대학생 계층 임대조건(할인)이 적용됩니다.",
+      max:"최대 거주 10년" },
+    newly:{ name:"신혼부부", short:"신혼·예비·한부모", dual:true, incomeBase:100,
+      asset:{0:345000000,1:379000000,2:413000000}, car:{0:45420000,1:49960000,2:54510000},
+      incomeNote:"신혼부부·예비신혼부부·한부모가족은 기본 100% 이하이고, <strong>배우자에게 근로·사업소득이 있으면(맞벌이) 120% 이하</strong>까지 가능합니다. 2인 가구는 각각 110% / 130%가 적용되며, 표의 2인 열에 이미 반영돼 있습니다.",
+      max:"무자녀 10년 / 자녀 1명 이상 14년" },
+    senior:{ name:"고령자", short:"만 65세 이상", dual:false, incomeBase:100,
+      asset:{0:345000000,1:379000000,2:413000000}, car:{0:45420000,1:49960000,2:54510000},
+      incomeNote:"만 65세 이상(1961.8.28 이전 출생)인 무주택세대구성원이 대상이며, 무주택세대구성원 전원의 소득을 합산합니다.",
+      max:"최대 거주 20년" },
+    welfare:{ name:"주거급여", short:"주거급여수급자", dual:false, incomeBase:null,
+      asset:null, car:null,
+      incomeNote:"주거급여수급자 계층은 <strong>공고문에 별도의 소득·자산 상한이 제시되지 않습니다.</strong> 공고일 기준 「주거급여법」 제2조 제2호·제3호에 따른 주거급여수급자 자격(수급자증명서 보유)으로 갈음합니다.",
+      max:"최대 거주 20년" }
+  },
+
+  // ── 출생자녀 가산 단계 (소득 %p / 자산·자동차 구간 인덱스 공용)
+  birthLabel:{0:"해당 없음",1:"2023.3.28 이후 1명",2:"이후 2명↑ 또는 이후1명+이전1명↑"},
+
+  // ── 우선공급 배점표 (계층별). 공고 4-2~4-6 원문.
+  score: {
+    univ:{ intro:"대학생 계층 배점은 <strong>우선공급 1순위로 신청한 경우에만</strong> 적용됩니다(3점 만점). 대학생은 부모 거주지, 취업준비생은 본인 거주기간으로 봅니다.",
+      note:"선정 순서: 2세 미만 자녀가 있는 자 → 순위 → 배점(1순위만 적용) → 추첨. 일반공급은 배점 없이 순위 → 추첨입니다.",
+      items:[{key:"resid",label:"거주 배점",hint:"대학생/취업준비생 구분",options:[
+        {label:"(대학생) 부모 모두 서울시 외 지역 거주",points:3},
+        {label:"(취준생) 해당 자치구 3년 이상 거주 · 최종전입 2023.8.28 이전",points:3},
+        {label:"(대학생) 부모 또는 부모 중 1인이 해당 자치구 외 서울시 거주",points:1},
+        {label:"(취준생) 해당 자치구 3년 미만 거주 · 최종전입 2023.8.29 이후",points:1},
+        {label:"해당 없음",points:0}]}]},
+    youth:{ intro:"청년 계층 우선공급 배점입니다(6점 만점). 거주기간은 <strong>서울시</strong> 최종전입일 기준이며, 공고일 현재 계속하여 등재돼 있어야 합니다.",
+      note:"선정 순서: 2세 미만 자녀가 있는 자 → 순위(자치구 1순위 / 자치구 외 서울시 2순위) → 배점 → 추첨. 청약통장 은행명을 잘못 적으면 납입회차가 0회로 처리되니 순위확인서로 확인하세요.",
+      items:[
+        {key:"resid",label:"거주지 및 거주기간",hint:"서울시 최종전입일 기준",options:[
+          {label:"서울시 3년 이상 거주 (2023.8.28 이전 전입)",points:3},
+          {label:"서울시 3년 미만 거주 (2023.8.29 이후 전입)",points:1}]},
+        {key:"bank",label:"주택청약종합저축 납입횟수",hint:"납입인정회차 기준",options:[
+          {label:"가입 2년 경과 + 24회 이상 납입",points:3},
+          {label:"가입 6개월 경과 + 6~23회 납입",points:1},
+          {label:"해당 없음",points:0}]}]},
+    newly:{ intro:"신혼부부·예비신혼부부·한부모가족 우선공급 배점입니다(6점 만점). 배점은 <strong>신청자 본인(예비신혼부부는 대표신청자)</strong> 기준으로만 심사합니다.",
+      note:"선정 순서: 2세 미만 자녀가 있는 자 → 순위 → 배점 → 해당 순위 지역 거주기간이 오래인 자 → 추첨. 배우자(대표신청자가 아닌 예비배우자)의 청약통장은 배점으로 인정되지 않습니다.",
+      items:[
+        {key:"resid",label:"거주지 및 거주기간",hint:"서울시 최종전입일 기준",options:[
+          {label:"서울시 3년 이상 거주 (2023.8.28 이전 전입)",points:3},
+          {label:"서울시 3년 미만 거주 (2023.8.29 이후 전입)",points:1}]},
+        {key:"bank",label:"주택청약종합저축 납입횟수",hint:"본인 통장만 인정",options:[
+          {label:"가입 2년 경과 + 24회 이상 납입",points:3},
+          {label:"가입 6개월 경과 + 6~23회 납입",points:1},
+          {label:"해당 없음",points:0}]}]},
+    senior:{ intro:"고령자 우선공급 배점입니다(9점 만점). 거주기간이 <strong>서울시가 아니라 해당 자치구</strong> 기준이라는 점이 청년·신혼부부와 다릅니다.",
+      note:"선정 순서: 2세 미만 자녀가 있는 자 → 순위 → 배점 → 해당 순위 지역 거주기간이 오래인 자 → 추첨. 고령자 계층의 일반공급은 순위 없이 추첨으로만 뽑습니다.",
+      items:[
+        {key:"age",label:"신청자 나이",hint:"공고일 기준 만 나이",options:[
+          {label:"만 75세 이상",points:3},{label:"만 70세 이상 ~ 75세 미만",points:2},{label:"만 65세 이상 ~ 70세 미만",points:1}]},
+        {key:"resid",label:"거주지 및 거주기간",hint:"해당 자치구 최종전입일 기준",options:[
+          {label:"해당 자치구 5년 이상 거주 (2021.8.28 이전 전입)",points:3},
+          {label:"해당 자치구 5년 미만 거주 (2021.8.29 이후 전입)",points:2},
+          {label:"해당 자치구 외 서울시에 거주",points:1}]},
+        {key:"special",label:"장애인·국가유공자 등",hint:"상이 1~7급, 5·18 신체장해 1~14급, 고엽제 경도장애 이상",options:[
+          {label:"해당",points:3},{label:"해당 없음",points:0}]}]},
+    welfare:{ intro:"주거급여수급자 우선공급 배점입니다(6점 만점). 거주기간은 <strong>해당 자치구</strong> 기준입니다.",
+      note:"선정 순서: 2세 미만 자녀가 있는 자 → 순위 → 배점 → 해당 순위 지역 거주기간이 오래인 자 → 추첨. 일반공급은 추첨으로만 뽑습니다.",
+      items:[
+        {key:"resid",label:"거주지 및 거주기간",hint:"해당 자치구 최종전입일 기준",options:[
+          {label:"해당 자치구 5년 이상 거주 (2021.8.28 이전 전입)",points:3},
+          {label:"해당 자치구 5년 미만 거주 (2021.8.29 이후 전입)",points:2},
+          {label:"해당 자치구 외 서울시에 거주",points:1}]},
+        {key:"special",label:"국가유공자·장애인·한부모 등",hint:"보훈보상·5·18·특수임무유공자 또는 유족, 참전유공자, 장애인, 지원대상 한부모가족",options:[
+          {label:"해당",points:3},{label:"해당 없음",points:0}]}]}
+  },
+
+  // ── 임대조건. 공고 3.공급현황 및 [별표1] 원문.
+  // o: 소유주체 → 'sh' = SH·서울시 소유(상호전환 50%), 'r' = 서울리츠1·2호 소유(20%)
+  // d: 임대보증금(천원), r: 월임대료(원), c: 금회 모집호수(합계)
+  rentRule: { depositPct:20, upRate:6.0, downRate:2.5, capSH:50, capREITS:20 },
+  units: [
+   {n:"두산위브더프레스티지(개봉동 199-4)",g:"구로구",o:"sh",s:1,u:[["신혼부부 40㎡",109600,421000,68]]},
+   {n:"창경궁롯데캐슬시그니처(삼선5)_서울리츠2호",g:"성북구",o:"r",s:1,u:[["청년(소득있음) 39㎡",120960,463000,30],["청년(소득없음) 39㎡",114240,437000,30],["신혼부부 39㎡",134400,514000,24],["고령자 39㎡",127680,489000,32]]},
+   {n:"디에이치 아너힐즈",g:"강남구",o:"sh",s:0,u:[["신혼부부 49㎡",181600,726000,23]]},
+   {n:"강동리엔파크11단지",g:"강동구",o:"sh",s:0,u:[["청년(소득있음) 29㎡",84960,340000,6],["청년(소득없음) 29㎡",80240,321000,6],["고령자 29S㎡",89680,359000,27]]},
+   {n:"강동리엔파크14단지",g:"강동구",o:"sh",s:0,u:[["청년(소득있음) 36㎡",104400,418000,12],["청년(소득없음) 36㎡",98600,394000,12],["고령자 29S㎡",88920,356000,26]]},
+   {n:"고덕 그라시움",g:"강동구",o:"sh",s:0,u:[["신혼부부 59㎡",162400,648000,7]]},
+   {n:"롯데캐슬베네루체",g:"강동구",o:"sh",s:0,u:[["신혼부부 59㎡",156800,626000,4]]},
+   {n:"고덕온빛채",g:"강동구",o:"sh",s:0,u:[["청년(소득있음) 36㎡",105840,423000,21],["청년(소득없음) 36㎡",99960,400000,21]]},
+   {n:"푸르내(서울리츠1호)",g:"강동구",o:"r",s:0,u:[["고령자 28S㎡",84460,274000,5]]},
+   {n:"꿈의숲 효성해링턴플레이스",g:"강북구",o:"sh",s:0,u:[["신혼부부 46㎡",96000,406000,5]]},
+   {n:"꿈의숲 롯데캐슬(미아4)_서울리츠2호",g:"강북구",o:"r",s:0,u:[["신혼부부 39㎡",128330,502000,6]]},
+   {n:"가양동 1457-1 모듈러 행복주택",g:"강서구",o:"sh",s:0,u:[["청년(소득있음) 16㎡",37440,162000,13],["청년(소득없음) 16㎡",35360,153000,13]]},
+   {n:"e편한세상 염창",g:"강서구",o:"sh",s:0,u:[["신혼부부 51㎡",141600,518000,18]]},
+   {n:"방화스카이포레",g:"강서구",o:"sh",s:0,u:[["청년(소득있음) 29㎡",72720,266000,12],["청년(소득없음) 29㎡",68680,252000,12],["신혼부부 44㎡",122400,449000,28]]},
+   {n:"e편한세상서울대입구(봉천12-2)_서울리츠2호",g:"관악구",o:"r",s:0,u:[["대학생 30㎡",102680,372000,8]]},
+   {n:"e편한세상 서울대입구2차(봉천12-1)_서울리츠2호",g:"관악구",o:"r",s:0,u:[["신혼부부 39㎡",154800,574000,10]]},
+   {n:"건대프라하임3차(화양동 94-9)",g:"광진구",o:"sh",s:0,u:[["대학생 22㎡",63920,233000,5]]},
+   {n:"어울채(서울리츠1호)",g:"광진구",o:"r",s:0,u:[["신혼부부 39㎡",136400,500000,12]]},
+   {n:"천왕연지마을 1",g:"구로구",o:"sh",s:0,u:[["고령자 32S㎡",53200,226000,6]]},
+   {n:"천왕연지마을 2",g:"구로구",o:"sh",s:0,u:[["신혼부부 40㎡",69600,296000,16]]},
+   {n:"천왕이펜하우스8단지",g:"구로구",o:"sh",s:0,u:[["청년(소득있음) 36㎡",65520,246000,32],["청년(소득없음) 36㎡",61880,232000,32],["고령자 29S㎡",55480,208000,12],["신혼부부 45㎡",90400,339000,31]]},
+   {n:"항동 하버라인 지구",g:"구로구",o:"sh",s:0,u:[["청년(소득있음) 29㎡",57600,216000,118],["청년(소득없음) 29㎡",54400,204000,118],["신혼부부 39㎡",85600,321000,103],["고령자 29S㎡",60800,228000,14],["고령자 39S㎡",81320,305000,9]]},
+   {n:"숲에리움(오류1동 청신호)",g:"구로구",o:"sh",s:0,u:[["대학생 16㎡",48280,205000,20],["대학생 17㎡",48280,205000,5],["청년(소득있음) 20㎡",62640,266000,28],["청년(소득없음) 20㎡",59160,252000,28]]},
+   {n:"노원센트럴푸르지오(상계4)_서울리츠2호",g:"노원구",o:"r",s:0,u:[["고령자 39㎡",110580,433000,3]]},
+   {n:"e편한세상 청계센트럴포레(용두5)_서울리츠2호",g:"동대문구",o:"r",s:0,u:[["청년(소득있음) 39㎡",114600,410000,5],["청년(소득없음) 39㎡",108230,387000,5]]},
+   {n:"보라매자이",g:"동작구",o:"sh",s:0,u:[["신혼부부 59㎡",180800,678000,9]]},
+   {n:"상도 청석채",g:"동작구",o:"sh",s:0,u:[["대학생 20㎡",43520,163000,14]]},
+   {n:"아크로리버하임(흑석7)_서울리츠2호",g:"동작구",o:"r",s:0,u:[["신혼부부 39㎡",191600,718000,12]]},
+   {n:"학수복합(학수)_서울리츠2호",g:"동작구",o:"r",s:0,u:[["대학생 20㎡",55420,226000,6]]},
+   {n:"공덕SK리더스뷰_2단지",g:"마포구",o:"sh",s:0,u:[["신혼부부 40㎡",125600,493000,22]]},
+   {n:"공덕동 크로시티",g:"마포구",o:"sh",s:0,u:[["청년(소득있음) 36㎡",134640,527000,10],["청년(소득없음) 36㎡",127160,498000,10]]},
+   {n:"마포자이더센트리지(염리2)_서울리츠2호",g:"마포구",o:"r",s:0,u:[["청년(소득있음) 34㎡",142020,496000,4],["청년(소득없음) 34㎡",134130,469000,4]]},
+   {n:"마포그랑자이(대흥2)_서울리츠2호",g:"마포구",o:"r",s:0,u:[["고령자 39㎡",181540,695000,22],["신혼부부 45㎡",220080,832000,4]]},
+   {n:"북한산두산위브(홍은14)_서울리츠2호",g:"서대문구",o:"r",s:0,u:[["청년(소득있음) 33㎡",116640,439000,7],["청년(소득없음) 33㎡",110160,415000,7]]},
+   {n:"DMC에코자이(가재울6)_서울리츠2호",g:"서대문구",o:"r",s:0,u:[["신혼부부 39㎡",143640,512000,11]]},
+   {n:"서초선포레",g:"서초구",o:"sh",s:0,u:[["고령자 21㎡",68400,251000,19],["청년(소득있음) 20㎡",61920,227000,15],["청년(소득없음) 20㎡",58480,214000,15]]},
+   {n:"반포센트럴자이",g:"서초구",o:"sh",s:0,u:[["신혼부부 59㎡",228800,897000,7]]},
+   {n:"왕십리자이(하왕1-5)_서울리츠2호",g:"성동구",o:"r",s:0,u:[["청년(소득있음) 38㎡",144360,596000,14],["청년(소득없음) 38㎡",136340,563000,14]]},
+   {n:"서울숲리버뷰자이(행당6)_서울리츠2호",g:"성동구",o:"r",s:0,u:[["청년(소득있음) 36㎡",145530,582000,7],["청년(소득없음) 36㎡",137440,549000,7]]},
+   {n:"금호파크힐스이편한세상(금호15)_서울리츠2호",g:"성동구",o:"r",s:0,u:[["고령자 30㎡",133640,544000,19]]},
+   {n:"정릉 하늘마루",g:"성북구",o:"sh",s:0,u:[["고령자 26S㎡",76760,301000,10],["대학생 22㎡",58480,229000,24]]},
+   {n:"보문파크뷰자이(보문3)_서울리츠2호",g:"성북구",o:"r",s:0,u:[["청년(소득있음) 29㎡",116640,433000,18],["청년(소득없음) 29㎡",110160,409000,18]]},
+   {n:"꿈의숲코오롱하늘채(장위2)_서울리츠2호",g:"성북구",o:"r",s:0,u:[["신혼부부 40㎡",132400,518000,9]]},
+   {n:"래미안아트리치(석관2)_서울리츠2호",g:"성북구",o:"r",s:0,u:[["고령자 39㎡",115520,452000,11]]},
+   {n:"래미안장위퍼스트하이(장위5)_서울리츠2호",g:"성북구",o:"r",s:0,u:[["청년(소득있음) 36㎡",99360,390000,20],["청년(소득없음) 36㎡",93840,368000,20]]},
+   {n:"꿈의숲아이파크(장위7)_서울리츠2호",g:"성북구",o:"r",s:0,u:[["신혼부부 40㎡",146690,538000,8]]},
+   {n:"장위자이레디언트(장위4)_서울리츠2호",g:"성북구",o:"r",s:0,u:[["청년(소득있음) 39㎡",109620,420000,19],["청년(소득없음) 39㎡",103530,396000,19]]},
+   {n:"송파파크데일 3",g:"송파구",o:"sh",s:0,u:[["청년(소득있음) 21㎡",57600,211000,34],["청년(소득없음) 21㎡",54400,199000,34]]},
+   {n:"잠실올림픽공원아이파크",g:"송파구",o:"sh",s:0,u:[["신혼부부 59㎡",211200,774000,22]]},
+   {n:"e편한세상 보라매2차",g:"영등포구",o:"sh",s:0,u:[["고령자 59㎡",149720,597000,10]]},
+   {n:"보라매 SK뷰(신길5)_서울리츠2호",g:"영등포구",o:"r",s:0,u:[["신혼부부 39㎡",159600,593000,8]]},
+   {n:"용산데시앙포레(효창6)_서울리츠2호",g:"용산구",o:"r",s:0,u:[["신혼부부 45㎡",171140,642000,5]]},
+   {n:"래미안베라힐즈(녹번1-2)_서울리츠2호",g:"은평구",o:"r",s:0,u:[["청년(소득있음) 38㎡",132480,530000,65],["청년(소득없음) 38㎡",125120,500000,65],["신혼부부 43㎡",168400,674000,8]]},
+   {n:"백련산SK VIEW IPARK(응암10)_서울리츠2호",g:"은평구",o:"r",s:0,u:[["고령자 36㎡",104120,401000,17],["신혼부부 40㎡",123600,476000,8]]},
+   {n:"백련산해모로(응암11)_서울리츠2호",g:"은평구",o:"r",s:0,u:[["청년(소득있음) 39㎡",108360,431000,8],["청년(소득없음) 39㎡",102340,407000,8]]},
+   {n:"DMC롯데캐슬더퍼스트(수색4)_서울리츠2호",g:"은평구",o:"r",s:0,u:[["신혼부부 49㎡",176000,626000,13]]},
+   {n:"힐스테이트녹번역(응암1)_서울리츠2호",g:"은평구",o:"r",s:0,u:[["청년(소득있음) 39㎡",116520,406000,16],["청년(소득없음) 39㎡",110040,384000,16],["신혼부부 41㎡",137430,480000,4]]},
+   {n:"DMC SK뷰(수색9)_서울리츠2호",g:"은평구",o:"r",s:0,u:[["청년(소득있음) 38㎡",87510,320000,4],["청년(소득없음) 38㎡",82650,303000,4]]},
+   {n:"DMC센트럴자이(증산2)_서울리츠2호",g:"은평구",o:"r",s:0,u:[["신혼부부 39㎡",99740,365000,12]]},
+   {n:"은뜨락(서울리츠1호)",g:"은평구",o:"r",s:0,u:[["청년(소득있음) 39㎡",97200,389000,66],["청년(소득없음) 39㎡",91800,367000,66],["신혼부부 44㎡",121600,486000,5],["고령자 39S㎡",102600,410000,3]]},
+   {n:"우디안4단지",g:"중랑구",o:"sh",s:0,u:[["주거급여수급자 21㎡",33600,140000,46]]},
+   {n:"사가정센트럴아이파크",g:"중랑구",o:"sh",s:0,u:[["고령자 59㎡",152760,547000,5]]}
+  ]
+};
+/* ===================== PARAMS 끝 ===================== */
+
+(function(){
+  "use strict";
+  const $ = id => document.getElementById(id);
+  const comma = n => Math.round(n).toLocaleString("ko-KR");
+  function wonText(won){
+    const m=won/10000, eok=Math.floor(m/10000), rest=Math.round(m%10000);
+    if(eok>0) return eok+"억 "+(rest>0? comma(rest)+"만원":"");
+    return comma(Math.round(m))+"만원";
+  }
+
+  $("subText").textContent = "SH 2026년 2차 공고(2026.08.28) 기준 · 총 1,484호 · 청약 "+PARAMS.schedule.apply;
+  $("disclaimer").innerHTML = "<b>안내</b> · 기준 수치는 <b>서울주택도시개발공사 2026년 2차 행복주택 입주자모집공고</b>("
+    + PARAMS.source + ") 원문 기준입니다. 행복주택은 <b>분양전환되지 않는 공공임대주택</b>이며, "
+    + "소득·자산은 사회보장정보시스템 조회 결과를 기준으로 판정되므로 공고일이 아닌 조회 시점 자료가 적용될 수 있습니다. "
+    + "본 계산은 참고용 추정치이니 최종 판단은 <b>SH 인터넷청약시스템(www.i-sh.co.kr/app)</b>의 공고문 원문으로 확인하세요.";
+
+  const tabs=document.querySelectorAll(".tab"), panels=document.querySelectorAll(".panel");
+  tabs.forEach(t=>t.addEventListener("click",()=>{
+    tabs.forEach(x=>x.setAttribute("aria-selected",x===t?"true":"false"));
+    panels.forEach(p=>p.setAttribute("data-active",p.dataset.tab===t.dataset.tab?"true":"false"));
+  }));
+  function stepper(id,cb){
+    const box=$(id); if(!box) return;
+    box.addEventListener("click",e=>{
+      const b=e.target.closest("button"); if(!b) return;
+      box.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+      cb(b.dataset.v);
+    });
+  }
+
+  /* ===== 상태 ===== */
+  let tier="youth", hh=1, dual=0, birth=0;
+
+  const tierKeys=Object.keys(PARAMS.tiers);
+  $("tierPick").innerHTML = tierKeys.map(k=>`<button data-v="${k}"${k===tier?' aria-pressed="true"':''}>${PARAMS.tiers[k].name}</button>`).join("");
+  $("hh").innerHTML = PARAMS.hhKeys.map(n=>`<button data-v="${n}"${n===hh?' aria-pressed="true"':''}>${n}인${n===7?"↑":""}</button>`).join("");
+
+  stepper("tierPick",v=>{tier=v;syncTier();renderAll();});
+  stepper("hh",v=>{hh=+v;renderIncome();});
+  stepper("dual",v=>{dual=+v;renderIncome();});
+  stepper("birth",v=>{birth=+v;renderIncome();renderAsset();});
+  $("income").addEventListener("input",renderIncome);
+  ["asset","car"].forEach(id=>$(id).addEventListener("input",renderAsset));
+
+  function syncTier(){ $("dualWrap").style.display = PARAMS.tiers[tier].dual ? "block" : "none"; }
+
+  /* ===== TAB1 소득자격 ===== */
+  // 적용 % 행 결정: 기본 100(신혼 맞벌이는 120) + 출생자녀 가산 10%p 단위
+  function rowPct(){
+    const t=PARAMS.tiers[tier];
+    if(t.incomeBase===null) return null;
+    let base = (t.dual && dual) ? 120 : 100;
+    return base + birth*10;
+  }
+  function capFor(pct,n){
+    const row=PARAMS.incomeRows[pct]; if(!row) return null;
+    if(n<=5) return row[n]||null;
+    if(!row[5]) return null;
+    return row[5] + (n-5)*row.add;
+  }
+  function renderIncome(){
+    const t=PARAMS.tiers[tier];
+    const chips=[];
+    if(t.incomeBase===null){
+      $("incomeResult").innerHTML =
+        `<div class="eyebrow">${t.name} 계층 · 소득 상한</div>`
+        +`<div class="big">별도 기준 없음</div>`
+        +`<div class="verdict ok">주거급여수급자 자격으로 판정</div>`
+        +`<div class="note" style="margin-top:10px">공고일(2026.08.28) 기준 주거급여수급자증명서를 보유한 무주택세대구성원만 신청할 수 있습니다.</div>`;
+      $("incomeNote").innerHTML = t.incomeNote;
+      $("incomeChips").innerHTML = `<span class="chip">${t.max}</span><span class="chip">우디안4단지 21㎡ 46호</span>`;
+      return;
+    }
+    const pct=rowPct(), cap=capFor(pct,hh);
+    const incWon=(+$("income").value||0)*10000;
+    if(cap===null){
+      $("incomeResult").innerHTML =
+        `<div class="eyebrow">${hh}인 가구 · 적용 ${pct}% 기준</div>`
+        +`<div class="big">해당 없음</div>`
+        +`<div class="verdict warn">공고 표에 이 조합의 금액이 없습니다</div>`
+        +`<div class="note" style="margin-top:10px">출생자녀 가산은 그 자녀가 가구원수에 포함되므로 1~2인 가구와는 조합되지 않습니다. 가구원수를 다시 확인해 주세요.</div>`;
+      $("incomeNote").innerHTML = t.incomeNote;
+      $("incomeChips").innerHTML = "";
+      return;
+    }
+    const pass = incWon>0 && incWon<=cap;
+    const fill = Math.min(100, cap? incWon/cap*100 : 0);
+    let verdict,cls;
+    if(incWon<=0){verdict="소득을 입력하세요";cls="";}
+    else if(pass){verdict="✓ "+t.name+" 계층 소득자격 통과";cls="ok";}
+    else{verdict="✗ 소득 상한 초과 — 신청 불가";cls="no";}
+    $("incomeResult").innerHTML=
+      `<div class="eyebrow">${t.name} · ${hh}인 가구 · 적용 ${pct}% 기준</div>`
+      +`<div class="big">${wonText(cap)} <small>/ 월</small></div>`
+      +`<div class="verdict ${cls}">${verdict}</div>`
+      +`<div class="bar"><span style="width:${fill.toFixed(0)}%;background:${pass?"var(--ok)":"var(--seal)"}"></span></div>`
+      +`<div class="barscale"><span>0</span><span>내 소득 ${wonText(incWon)}</span><span>상한 ${wonText(cap)}</span></div>`;
+    chips.push(`<span class="chip">${t.max}</span>`);
+    if(hh===1) chips.push(`<span class="chip">1인 가구 +20%p 반영됨</span>`);
+    if(hh===2) chips.push(`<span class="chip">2인 가구 +10%p 반영됨</span>`);
+    if(t.dual&&dual) chips.push(`<span class="chip">맞벌이 120% 적용</span>`);
+    if(birth) chips.push(`<span class="chip">출생자녀 +${birth*10}%p</span>`);
+    if(hh>=6) chips.push(`<span class="chip">6인↑ 1인당 가산액 합산</span>`);
+    $("incomeChips").innerHTML = chips.join("");
+    $("incomeNote").innerHTML = t.incomeNote;
+  }
+
+  /* ===== TAB2 자산 ===== */
+  function renderAsset(){
+    const t=PARAMS.tiers[tier];
+    if(!t.asset){
+      $("assetResult").innerHTML =
+        `<div class="eyebrow">${t.name} 계층 · 자산 기준</div>`
+        +`<div class="big">별도 기준 없음</div>`
+        +`<div class="verdict ok">수급자 자격으로 갈음</div>`;
+      $("assetNote").innerHTML = "공고문 4-6에는 주거급여수급자 계층에 대한 총자산·자동차 상한이 별도로 제시되어 있지 않습니다. 다만 무주택세대구성원 요건은 그대로 적용됩니다.";
+      return;
+    }
+    const totalCap=t.asset[birth], carCap=t.car[birth];
+    const asset=(+$("asset").value||0)*10000, car=(+$("car").value||0)*10000;
+    const passA=asset<=totalCap;
+    const passC=t.carNone ? car<=0 : car<=carCap;
+    const pass=passA&&passC;
+    $("assetResult").innerHTML=
+      `<div class="eyebrow">${t.name} 계층 자산 기준 (출생자녀 가산 ${PARAMS.birthLabel[birth]})</div>`
+      +`<div class="big">${pass?"✓ 통과":"✗ 초과"}</div>`
+      +`<div class="verdict ${pass?"ok":"no"}">총자산 ${passA?"통과":"초과"} · 자동차 ${passC?"통과":"초과"}</div>`
+      +`<div class="note" style="margin-top:10px">총자산 상한 <strong>${wonText(totalCap)}</strong> / 자동차 기준 <strong>${t.carNone?"보유 불가(산출대상 자동차 미소유)":wonText(carCap)}</strong>.<br>
+        입력값: 총자산 ${wonText(asset)}, 자동차 ${wonText(car)}.</div>`;
+    $("assetNote").innerHTML = "총자산은 부동산·자동차·금융자산·일반자산을 합산한 금액에서 <strong>부채를 차감</strong>해 산출합니다. "
+      + "마이너스통장 대출, 신용카드 연체대금, 개인 간 거래는 부채로 인정되지 않습니다. "
+      + "총자산 기준을 통과해도 <strong>자동차 가액 기준을 따로 충족</strong>해야 하며, "
+      + "장애인사용 자동차와 국가유공자(상이 1~7급) 보철용 차량은 자동차 가액 산출에서 제외됩니다. "
+      + (t.carNone ? "대학생 계층은 본인이 자동차 가액 산출대상 자동차를 <strong>소유하고 있지 않아야</strong> 합니다." : "");
+  }
+
+  /* ===== TAB3 배점 ===== */
+  function buildScore(){
+    const sc=PARAMS.score[tier];
+    $("scoreIntro").innerHTML = sc.intro;
+    $("scoreNote").innerHTML = sc.note + " 공고문 전 계층 공통으로 <strong>2세 미만 자녀(2024.8.28 이후 출생·태아·입양)가 있는 신청자가 우선공급에서 가장 먼저</strong> 선정되며, 그 인원이 모집 인원을 넘으면 무작위 추첨합니다.";
+    $("scoreFields").innerHTML = sc.items.map(it=>{
+      const opts=it.options.map((o,i)=>`<option value="${o.points}"${i===0?" selected":""}>${o.label} — ${o.points}점</option>`).join("");
+      const hint=it.hint?`<span class="hint">${it.hint}</span>`:"";
+      return `<label class="field"><span class="lab">${it.label} ${hint}</span><select data-key="${it.key}">${opts}</select></label>`;
+    }).join("");
+    $("scoreFields").querySelectorAll("select").forEach(s=>s.addEventListener("change",renderScore));
+  }
+  function renderScore(){
+    const sc=PARAMS.score[tier], items=sc.items;
+    const max=items.reduce((s,it)=>s+Math.max(...it.options.map(o=>o.points)),0);
+    const selects=$("scoreFields").querySelectorAll("select");
+    let total=0; const rows=[];
+    selects.forEach((s,i)=>{const p=+s.value;total+=p;rows.push([items[i].label,p,Math.max(...items[i].options.map(o=>o.points))]);});
+    const pctFull=max? total/max*100 : 0;
+    const grade=pctFull>=100?["만점 — 동점자 다수 예상, 추첨 대비","ok"]:pctFull>=60?["중상위권","warn"]:["하위권 — 상향 여지 있음","no"];
+    const breakdown=rows.map(r=>`<div class="srow"><span class="sk">${r[0]}</span><span class="sbar"><span style="width:${r[2]?r[1]/r[2]*100:0}%"></span></span><span class="sv">${r[1]} / ${r[2]}</span></div>`).join("");
+    $("scoreResult").innerHTML=
+      `<div class="eyebrow">${PARAMS.tiers[tier].name} 우선공급 예상 배점</div>`
+      +`<div class="big">${total} <small>/ ${max}점</small></div>`
+      +`<div class="verdict ${grade[1]}">${grade[0]}</div>`
+      +`<div class="scorebreak">${breakdown}</div>`;
+  }
+
+  /* ===== TAB4 임대료 ===== */
+  $("cx").innerHTML = PARAMS.units.map((c,i)=>`<option value="${i}">${c.s?"[신규] ":""}${c.g} · ${c.n}</option>`).join("");
+  let ci=0, ui=0;
+  function buildUnits(){
+    const c=PARAMS.units[ci];
+    $("ut").innerHTML = c.u.map((u,i)=>`<option value="${i}">${u[0]}</option>`).join("");
+    ui=0;
+  }
+  $("cx").addEventListener("change",()=>{ci=+$("cx").value;buildUnits();$("convUp").value=0;$("convDown").value=0;renderRent();});
+  $("ut").addEventListener("change",()=>{ui=+$("ut").value;$("convUp").value=0;$("convDown").value=0;renderRent();});
+  ["convUp","convDown"].forEach(id=>$(id).addEventListener("input",renderRent));
+
+  function renderRent(){
+    const c=PARAMS.units[ci], u=c.u[ui];
+    const R=PARAMS.rentRule;
+    const cap = (c.o==="r" ? R.capREITS : R.capSH)/100;
+    const baseDep = u[1]*1000, baseRent = u[2];
+    const maxUp   = baseRent*cap*12/(R.upRate/100);   // 월임대료 → 보증금 전환 한도(원)
+    const maxDown = baseDep*cap;                      // 보증금 → 월임대료 전환 한도(원)
+    let up=(+$("convUp").value||0)*10000, down=(+$("convDown").value||0)*10000;
+    let warn="";
+    if(up>maxUp){ up=maxUp; warn+=`증액은 최대 ${wonText(maxUp)}까지만 가능해 한도로 계산했습니다. `; }
+    if(down>maxDown){ down=maxDown; warn+=`감액은 최대 ${wonText(maxDown)}까지만 가능해 한도로 계산했습니다. `; }
+    const deposit = baseDep + up - down;
+    let rent = baseRent - up*(R.upRate/100)/12 + down*(R.downRate/100)/12;
+    if(rent<0) rent=0;
+    rent = Math.floor(rent/100)*100;
+
+    $("convHint").textContent = (c.o==="r"?"서울리츠 소유 — 기준액의 20%까지":"SH·서울시 소유 — 기준액의 50%까지");
+    $("rentResult").innerHTML=
+      `<div class="eyebrow">${u[0]} · 조정 후 월 부담</div>`
+      +`<div class="big">${comma(rent)}<small> 원 / 월</small></div>`
+      +`<div class="verdict ok">보증금 ${wonText(deposit)}</div>`
+      +`<div class="note" style="margin-top:10px">${warn}보증금 증액 한도 <strong>${wonText(maxUp)}</strong> · 감액 한도 <strong>${wonText(maxDown)}</strong>
+         (${c.o==="r"?"서울리츠1·2호 소유 단지는 20%":"SH·서울시 소유 단지는 50%"}).</div>`;
+    $("baseDeposit").textContent=wonText(baseDep);
+    $("baseRent").textContent=comma(baseRent)+"원";
+    $("finalDeposit").textContent=wonText(deposit);
+    $("finalRent").textContent=comma(rent)+"원";
+    $("downpay").textContent=wonText(baseDep*R.depositPct/100);
+    $("balance").textContent=wonText(baseDep*(100-R.depositPct)/100);
+    $("cnt").textContent=u[3]+"호";
+    $("rentNote").innerHTML = "월임대료를 보증금으로 전환할 때 이율은 <strong>연 6.0%</strong>, 보증금을 월임대료로 전환할 때는 <strong>연 2.5%</strong>입니다(한국은행 기준금리에 따라 변동 가능). "
+      + "전환은 계약 체결 후 100만원 단위로 신청하며, <strong>한 번 전환하면 1년 이내에는 다시 신청할 수 없습니다.</strong> "
+      + "계약금은 임대보증금의 20%, 잔금은 80%입니다. 표시 금액은 단지 내 대표 면적 기준이라 실제 배정된 동·호와 다소 차이가 날 수 있습니다.";
+  }
+
+  /* ===== 초기 렌더 ===== */
+  function renderAll(){ renderIncome(); renderAsset(); buildScore(); renderScore(); }
+  syncTier(); buildUnits(); renderAll(); renderRent();
+})();
+</script>
+<!-- 방문 통계: GoatCounter 코드를 넣으면 랜딩 합산에 포함됩니다 -->
+<script>
+(function(){ var GC_CODE = "";
+  if(!GC_CODE) return;
+  var s=document.createElement("script");
+  s.async=true; s.dataset.goatcounter="https://"+GC_CODE+".goatcounter.com/count";
+  s.src="//gc.zgo.at/count.js"; document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>
