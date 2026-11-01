@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>노량진역 청년안심주택 더써밋타워 추가모집 계산기</title>
+<style>
+  :root{
+    --ink:#16233a;--ink-soft:#55617a;--line:#dfe3ec;--paper:#f7f6f2;--card:#fff;
+    --seal:#b23a2e;--seal-soft:#f4e4e1;--gold:#b58a3c;--ok:#2f7d5b;--warn:#b07c1e;
+    --s1:#2f6d8f;--s2:#5a8fa8;--s3:#94b3c4;
+    --shadow:0 1px 2px rgba(22,35,58,.05),0 8px 24px rgba(22,35,58,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:radial-gradient(1200px 400px at 100% -10%,#efe9df 0%,transparent 60%),var(--paper);
+    color:var(--ink);font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    line-height:1.5;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 64px}
+  header{margin-bottom:22px}
+  .plate{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;font-weight:700;
+    color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;padding:4px 10px;background:var(--seal-soft)}
+  h1{font-size:26px;line-height:1.25;margin:14px 0 6px;letter-spacing:-.02em;font-weight:800}
+  h1 .accent{color:var(--seal)}
+  .sub{color:var(--ink-soft);font-size:14px;margin:0}
+  .tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:22px 0 18px;background:#ecebe4;padding:5px;border-radius:12px}
+  .tab{appearance:none;border:0;cursor:pointer;font:inherit;font-weight:700;font-size:12.5px;padding:10px 4px;
+    border-radius:8px;color:var(--ink-soft);background:transparent;transition:all .18s ease}
+  .tab .n{display:block;font-size:9px;letter-spacing:.08em;opacity:.6;font-weight:800;margin-bottom:2px}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+  .panel{display:none;animation:fade .25s ease}
+  .panel[data-active="true"]{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow);margin-bottom:14px}
+  label.field{display:block;margin-bottom:16px}
+  label.field:last-child{margin-bottom:0}
+  .field .lab{display:block;font-size:13px;font-weight:700;margin-bottom:7px}
+  .field .hint{color:var(--ink-soft);font-weight:500;font-size:12px}
+  .stepper{display:flex;gap:8px;flex-wrap:wrap}
+  .stepper button{flex:1 1 44px;min-width:44px;cursor:pointer;border:1px solid var(--line);background:#fbfbf9;
+    border-radius:9px;font:inherit;font-weight:700;padding:9px 4px;color:var(--ink);transition:all .15s ease}
+  .stepper button[aria-pressed="true"]{border-color:var(--seal);background:var(--seal-soft);color:var(--seal)}
+  input[type=number]{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);
+    border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  input:focus,.stepper button:focus-visible,.tab:focus-visible,select:focus{outline:2px solid var(--seal);outline-offset:1px}
+  select{width:100%;font:inherit;font-weight:600;padding:11px 13px;border:1px solid var(--line);border-radius:9px;background:#fbfbf9;color:var(--ink)}
+  .inline{display:flex;align-items:center;gap:8px}
+  .inline input{text-align:right}
+  .unit{color:var(--ink-soft);font-weight:700;font-size:13px;white-space:nowrap}
+  .result{border-radius:14px;padding:18px;margin-bottom:14px;border:1px solid var(--line);background:var(--card)}
+  .result .eyebrow{font-size:11px;letter-spacing:.12em;font-weight:800;color:var(--ink-soft);text-transform:uppercase}
+  .big{font-size:28px;font-weight:800;letter-spacing:-.02em;margin:4px 0}
+  .big small{font-size:15px;font-weight:700;color:var(--ink-soft)}
+  .verdict{font-size:14px;font-weight:700}
+  .verdict.ok{color:var(--ok)}.verdict.warn{color:var(--warn)}.verdict.no{color:var(--seal)}
+  .bar{height:12px;border-radius:99px;background:#ececec;overflow:hidden;margin:12px 0 6px}
+  .bar>span{display:block;height:100%;border-radius:99px;transition:width .5s ease}
+  .barscale{display:flex;justify-content:space-between;font-size:11px;color:var(--ink-soft);font-weight:700}
+  .stages{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .stage{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;opacity:.55;transition:all .2s ease}
+  .stage.hit{opacity:1;border-color:var(--ink);background:#fbfbf9}
+  .stage .dot{width:10px;height:10px;border-radius:99px;flex:none}
+  .stage b{font-weight:800}.stage .pct{margin-left:auto;font-weight:800;color:var(--ink-soft)}
+  .kv{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px dashed var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .k{color:var(--ink-soft);font-weight:600}.kv .v{font-weight:800}
+  .scorebreak{display:flex;flex-direction:column;gap:7px;margin-top:14px}
+  .srow{display:flex;align-items:center;font-size:13px;gap:8px}
+  .srow .sk{color:var(--ink-soft);font-weight:600;flex:1}
+  .srow .sv{font-weight:800}
+  .srow .sbar{flex:none;width:78px;height:7px;border-radius:99px;background:#ececec;overflow:hidden}
+  .srow .sbar>span{display:block;height:100%;background:var(--gold)}
+  .note{font-size:12px;color:var(--ink-soft);line-height:1.55}
+  .note strong{color:var(--ink)}
+  footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line)}
+  .disclaimer{font-size:11.5px;color:var(--ink-soft);line-height:1.6;background:#fbfaf6;border:1px dashed var(--line);border-radius:10px;padding:12px 14px}
+  .disclaimer b{color:var(--seal)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <span class="plate">🏠 청년안심주택 추가모집 계산기</span>
+    <h1>노량진역 <span class="accent">더써밋타워</span><br>내 자격·순위·월 부담 확인</h1>
+    <p class="sub" id="subText"></p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="true" data-tab="elig"><span class="n">1</span>신청자격</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="income"><span class="n">2</span>소득순위</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="asset"><span class="n">3</span>자산</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="cost"><span class="n">4</span>호실·비용</button>
+  </div>
+
+  <!-- TAB1 신청자격 -->
+  <section class="panel" data-tab="elig" data-active="true">
+    <div class="card">
+      <label class="field">
+        <span class="lab">신청 유형</span>
+        <div class="stepper" id="who">
+          <button data-v="youth" aria-pressed="true">청년</button>
+          <button data-v="newly">(예비)신혼부부</button>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lab">공급 구분 <span class="hint">타입별 1건만 신청 가능</span></span>
+        <div class="stepper" id="supply">
+          <button data-v="special" aria-pressed="true">특별공급</button>
+          <button data-v="general">일반공급</button>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lab">신청자 나이 <span class="hint">(모집공고일 2026.08.20 기준, 만 나이)</span></span>
+        <div class="inline"><input type="number" id="age" inputmode="numeric" value="29"><span class="unit">세</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">세대원 전원 무주택인가요?</span>
+        <div class="stepper" id="nohouse">
+          <button data-v="1" aria-pressed="true">예</button>
+          <button data-v="0">아니오</button>
+        </div>
+      </label>
+      <label class="field">
+        <span class="lab">보유 자동차 가액 <span class="hint">(이륜차 포함, 없으면 0 / 만원)</span></span>
+        <div class="inline"><input type="number" id="car" inputmode="numeric" value="0"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="result" id="eligResult"></div>
+    <div class="card"><p class="note" id="eligNote"></p></div>
+  </section>
+
+  <!-- TAB2 소득순위 -->
+  <section class="panel" data-tab="income" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">가구원수</span>
+        <div class="stepper" id="hh"></div>
+      </label>
+      <label class="field">
+        <span class="lab">가구 월평균 소득 <span class="hint">(세전, 해당 세대원 합산 / 만원)</span></span>
+        <div class="inline"><input type="number" id="income" inputmode="numeric" value="350"><span class="unit">만원 / 월</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">지역 순위 <span class="hint">주민등록 주소지 · 대학 · 직장 소재지</span></span>
+        <div class="stepper" id="region">
+          <button data-v="1" aria-pressed="true">동작구</button>
+          <button data-v="2">서울(동작구 외)</button>
+          <button data-v="3">그 외 지역</button>
+        </div>
+      </label>
+    </div>
+    <div class="result" id="incomeResult"></div>
+    <div class="card">
+      <div id="rankRows" class="stages"></div>
+      <p class="note" style="margin-top:12px"><strong>순위 선택 주의:</strong> 청약할 때 내 소득 순위를 직접 고릅니다. 고른 순위와 제출 서류가 다르면 당첨이 취소될 수 있어요. 같은 소득 순위끼리는 지역 순위(동작구 → 서울 → 그 외)를 적용합니다.</p>
+    </div>
+  </section>
+
+  <!-- TAB3 자산 -->
+  <section class="panel" data-tab="asset" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">총자산 <span class="hint">(청년: 본인 / 신혼: 세대 · 부동산+금융+기타 − 부채 / 만원)</span></span>
+        <div class="inline"><input type="number" id="asset" inputmode="numeric" value="8000"><span class="unit">만원</span></div>
+      </label>
+    </div>
+    <div class="result" id="assetResult"></div>
+    <div class="card"><p class="note" id="assetNote"></p></div>
+  </section>
+
+  <!-- TAB4 호실·비용 -->
+  <section class="panel" data-tab="cost" data-active="false">
+    <div class="card">
+      <label class="field">
+        <span class="lab">호실</span>
+        <div class="stepper" id="unit"></div>
+      </label>
+      <label class="field">
+        <span class="lab">보증금 중 대출로 마련할 금액 <span class="hint">(만원)</span></span>
+        <div class="inline"><input type="number" id="loanAmt" inputmode="numeric" value="10000"><span class="unit">만원</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">대출 금리 <span class="hint">(연 %, 본인 조건 입력)</span></span>
+        <div class="inline"><input type="number" id="loanRate" inputmode="decimal" step="0.1" value="3.5"><span class="unit">%</span></div>
+      </label>
+      <label class="field">
+        <span class="lab">자기자금 기회비용 <span class="hint">(예금 금리 등 연 %, 0이면 제외)</span></span>
+        <div class="inline"><input type="number" id="oppRate" inputmode="decimal" step="0.1" value="2.5"><span class="unit">%</span></div>
+      </label>
+    </div>
+    <div class="result" id="costResult"></div>
+    <div class="card" id="unitInfo"></div>
+    <div class="card"><p class="note" id="costNote"></p></div>
+  </section>
+
+  <footer><div class="disclaimer" id="disclaimer"></div></footer>
+</div>
+
+<script>
+/* ============================================================
+   PARAMS — 노량진역 청년안심주택 더써밋타워 입주자 추가 모집공고(2026.08.20) 원문 기준.
+   공공지원 민간임대. 보증금·임대료는 호실별 고정(계약 후 보증금 비율 변경 불가).
+   ============================================================ */
+const PARAMS = {
+  complex: "노량진역 청년안심주택 더써밋타워",
+  region: "서울특별시 동작구 장승배기로 174 (9호선 노량진역 4번 출구)",
+  source: "더써밋타워 입주자 추가 모집공고 2026.08.20 (최초공고 2026.02.05)",
+  announceDate: "2026.08.20",
+  ageMin: 19, ageMax: 39,
+  carLimit: 4542,                 // 만원
+  // 전년도 도시근로자 가구원수별 월평균소득 (원). 공고 표 그대로.
+  income: {
+    hhKeys: [1,2,3,4,5,6],
+    rank: {
+      1: {pct:100, v:{1:3813363, 2:5866270, 3:8168429, 4:8802202, 5:9326985}},
+      2: {pct:110, v:{1:4194699, 2:6452897, 3:8985272, 4:9682422, 5:10259684}},
+      3: {pct:120, v:{1:4576036, 2:7039524, 3:9802115, 4:10562642, 5:11192382}}
+    },
+    perExtra: 579278              // 6인 이상: 5인 + 1인당 579,278원 (100% 기준)
+  },
+  asset: { youth: 25100, newly: 34500 },   // 만원 (청년 30~39세 가구 기준 251백만, 신혼 소득3분위 345백만)
+  units: {
+    "1201호": {supply:"special", form:"단층형", floor:12, deposit:13100, rent:55.4, movein:"2026.10.19"},
+    "2117호": {supply:"special", form:"2층형", floor:21, deposit:17000, rent:39.3, movein:"2026.10.26"},
+    "2310호": {supply:"general", form:"2층형", floor:23, deposit:16800, rent:72.4, movein:"2026.10.14"},
+    "1313호": {supply:"general", form:"단층형", floor:13, deposit:16200, rent:68,   movein:"2026.10.13"}
+  },
+  smallTenant: { limit: 16500, priority: 5500 }, // 만원, 공고 기재(서울)
+  penalty: 100                                   // 만원, 입주 전 계약 파기 위약금
+};
+
+(function(){
+  const $=id=>document.getElementById(id);
+  const comma=n=>Math.round(n).toLocaleString("ko-KR");
+  const man=v=>{ // 만원 → 표기
+    v=Math.round(v); const e=Math.floor(v/10000), r=v%10000;
+    return e>0 ? (e+"억"+(r?" "+comma(r)+"만":"")+"원") : comma(r)+"만원";
+  };
+  const wonMan=w=>comma(w/10000)+"만원";
+
+  $("subText").textContent=PARAMS.region+" · 추가모집 4세대(특별 2·일반 2)";
+  $("disclaimer").innerHTML=`<b>참고용 계산기</b> — ${PARAMS.source} 기준. 실제 자격·순위는 제출 서류로 판정하며, 공고에 없는 사항은 최초 모집공고를 따릅니다. 보증금·임대료는 타입별 기준 금액으로 계약 호실에 따라 일부 다를 수 있습니다. 문의: 입주지원센터 02-823-5410`;
+
+  // tabs
+  document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.setAttribute("aria-selected",x===t));
+    document.querySelectorAll(".panel").forEach(p=>p.dataset.active=(p.dataset.tab===t.dataset.tab));
+  }));
+  function stepper(id,cb){
+    $(id).addEventListener("click",e=>{
+      const b=e.target.closest("button"); if(!b) return;
+      $(id).querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+      cb(b.dataset.v);
+    });
+  }
+  const S={who:"youth",supply:"special",nohouse:"1",hh:1,region:"1",unit:"1201호"};
+  stepper("who",v=>{S.who=v;renderAll();});
+  stepper("supply",v=>{S.supply=v;
+    const first=Object.keys(PARAMS.units).find(k=>PARAMS.units[k].supply===v); S.unit=first; buildUnits(); renderAll();});
+  stepper("nohouse",v=>{S.nohouse=v;renderAll();});
+  stepper("region",v=>{S.region=v;renderIncome();});
+  ["age","car","income","asset","loanAmt","loanRate","oppRate"].forEach(id=>$(id).addEventListener("input",renderAll));
+
+  // ---------- 소득 한도 ----------
+  function limit(rank,hh){
+    const r=PARAMS.income.rank[rank];
+    if(hh<=5) return r.v[hh];
+    return r.v[5] + PARAMS.income.perExtra*(hh-5)*r.pct/100;
+  }
+  $("hh").innerHTML=PARAMS.income.hhKeys.map(k=>`<button data-v="${k}"${k===1?' aria-pressed="true"':''}>${k===6?"6인+":k+"인"}</button>`).join("");
+  stepper("hh",v=>{S.hh=+v;renderIncome();});
+
+  // ---------- TAB1 ----------
+  function renderElig(){
+    const age=+$("age").value||0, car=+$("car").value||0;
+    const checks=[
+      ["나이 만 19~39세", age>=PARAMS.ageMin && age<=PARAMS.ageMax],
+      ["세대원 전원 무주택", S.nohouse==="1"],
+      [`자동차 가액 ${comma(PARAMS.carLimit)}만원 이하`, car<=PARAMS.carLimit]
+    ];
+    const ok=checks.every(c=>c[1]);
+    const extra = S.supply==="special" ? "특별공급은 소득순위(120% 이하)·자산 기준까지 충족해야 합니다 → 2·3번 탭에서 확인" :
+      "일반공급은 소득·자산 기준 확인 서류를 받지 않습니다(제출서류 목록 기준). 연령·무주택·자동차 기준만 충족하면 신청 가능";
+    $("eligResult").innerHTML=
+      `<div class="eyebrow">${S.supply==="special"?"특별공급":"일반공급"} · ${S.who==="youth"?"청년":"(예비)신혼부부"} 기본 자격</div>`
+      +`<div class="big">${ok?"신청 가능":"신청 불가"}</div>`
+      +`<div class="verdict ${ok?"ok":"no"}">${ok?"기본 요건 충족":"충족하지 못한 요건이 있습니다"}</div>`
+      +`<div class="stages">${checks.map(c=>`<div class="stage hit"><span class="dot" style="background:${c[1]?"var(--ok)":"var(--seal)"}"></span><b>${c[0]}</b><span class="pct">${c[1]?"충족":"미충족"}</span></div>`).join("")}</div>`
+      +`<p class="note" style="margin-top:10px">${extra}</p>`;
+    $("eligNote").innerHTML=`<strong>신청 규칙:</strong> 1인 1주택형(타입)만 신청 가능하며 중복 신청 시 모두 탈락합니다. (예비)신혼부부는 1세대로 보아 부부 중 1명만 대표 신청하고, 계약도 청약자 단독 명의(공동명의 불가)입니다. 자동차는 세대당 1대만 등록·사용할 수 있고, 등록 차량은 지분이 아닌 차량 전체 가액으로 판단합니다. 기존 계약자는 사업자에 퇴거신청서를 낸 뒤 신청할 수 있습니다.`;
+  }
+
+  // ---------- TAB2 ----------
+  function renderIncome(){
+    const inc=(+$("income").value||0)*10000, hh=S.hh;
+    let rank=null; for(const r of [1,2,3]) if(inc<=limit(r,hh)){rank=r;break;}
+    const top=limit(3,hh);
+    const regionTxt={1:"동작구(1순위)",2:"서울(2순위)",3:"그 외(3순위)"}[S.region];
+    const pctOfBase=inc/limit(1,hh)*100;
+    let head, cls, verdict;
+    if(S.supply==="general"){
+      head="일반공급은 소득순위 없음"; cls="ok";
+      verdict="일반공급은 소득 기준 확인 서류를 받지 않습니다. 아래는 특별공급 참고용입니다.";
+    } else if(rank){
+      head=`소득 ${rank}순위`; cls=rank===1?"ok":"warn";
+      verdict=`특별공급 신청 가능 · 동순위 내 지역 ${regionTxt}`;
+    } else {
+      head="특별공급 소득 초과"; cls="no";
+      verdict=`${hh===6?"6인+":hh+"인"} 가구 120% 상한 ${wonMan(top)} 초과 → 일반공급 검토`;
+    }
+    $("incomeResult").innerHTML=
+      `<div class="eyebrow">도시근로자 월평균소득 대비 ${pctOfBase.toFixed(0)}%</div>`
+      +`<div class="big">${head}</div>`
+      +`<div class="verdict ${cls}">${verdict}</div>`
+      +`<div class="bar"><span style="width:${Math.min(100,pctOfBase/120*100)}%;background:${rank?(rank===1?"var(--ok)":"var(--warn)"):"var(--seal)"}"></span></div>`
+      +`<div class="barscale" style="position:relative;height:16px"><span style="position:absolute;left:0">0%</span><span style="position:absolute;left:83.3%;transform:translateX(-50%)">100%</span><span style="position:absolute;right:0">120%</span></div>`;
+    $("rankRows").innerHTML=[1,2,3].map(r=>`<div class="stage${rank===r?" hit":""}"><span class="dot" style="background:var(--s${r})"></span><b>${r}순위</b> ${PARAMS.income.rank[r].pct}% 이하<span class="pct">${wonMan(limit(r,hh))}</span></div>`).join("");
+  }
+
+  // ---------- TAB3 ----------
+  function renderAsset(){
+    const a=+$("asset").value||0, lim=PARAMS.asset[S.who];
+    const ok=a<=lim;
+    if(S.supply==="general"){
+      $("assetResult").innerHTML=`<div class="eyebrow">일반공급</div><div class="big">자산 기준 없음</div><div class="verdict ok">일반공급 제출서류에 자산 확인서가 없습니다. 아래는 특별공급 참고 기준입니다.</div><div class="kv"><span class="k">특별공급 ${S.who==="youth"?"청년":"신혼"} 자산 상한</span><span class="v">${man(lim)}</span></div>`;
+    } else {
+      $("assetResult").innerHTML=`<div class="eyebrow">${S.who==="youth"?"청년(본인) · 30~39세 가구 기준":"(예비)신혼부부 세대 · 소득 3분위 기준"}</div>`
+        +`<div class="big">${man(a)} <small>/ 상한 ${man(lim)}</small></div>`
+        +`<div class="verdict ${ok?"ok":"no"}">${ok?"자산 기준 충족":"자산 기준 초과 — 특별공급 불가"}</div>`
+        +`<div class="bar"><span style="width:${Math.min(100,a/lim*100)}%;background:${ok?"var(--ok)":"var(--seal)"}"></span></div>`
+        +`<div class="barscale"><span>0</span><span>상한 ${man(lim)}</span></div>`;
+    }
+    $("assetNote").innerHTML=`<strong>기준(공고):</strong> 청년 2억 5,100만원(본인 기준) / (예비)신혼부부 3억 4,500만원((구성될) 세대 기준). 자산은 계좌정보통합관리서비스 내역·신용정보조회서(대출)·지방세 과세증명서로 확인합니다. 자동차는 자산과 별도로 ${comma(PARAMS.carLimit)}만원 이하 기준이 모든 신청자에게 적용됩니다.`;
+  }
+
+  // ---------- TAB4 ----------
+  function buildUnits(){
+    const keys=Object.keys(PARAMS.units).filter(k=>PARAMS.units[k].supply===S.supply);
+    $("unit").innerHTML=keys.map(k=>`<button data-v="${k}"${k===S.unit?' aria-pressed="true"':''}>${k} · ${PARAMS.units[k].form}</button>`).join("");
+  }
+  stepper("unit",v=>{S.unit=v;renderCost();});
+  function renderCost(){
+    const u=PARAMS.units[S.unit];
+    let loan=Math.max(0,Math.min(+$("loanAmt").value||0,u.deposit));
+    const own=u.deposit-loan;
+    const li=loan*(+$("loanRate").value||0)/100/12;   // 만원/월
+    const oi=own*(+$("oppRate").value||0)/100/12;
+    const total=u.rent+li+oi;
+    const small=u.deposit<=PARAMS.smallTenant.limit;
+    $("costResult").innerHTML=
+      `<div class="eyebrow">${S.unit} 실질 월 주거비(관리비·보증료 제외)</div>`
+      +`<div class="big">${(total).toFixed(1)}<small> 만원 / 월</small></div>`
+      +`<div class="verdict ok">임대료 ${u.rent}만 + 대출이자 ${li.toFixed(1)}만 + 기회비용 ${oi.toFixed(1)}만</div>`;
+    $("unitInfo").innerHTML=
+      `<div class="kv"><span class="k">공급 구분 · 형태</span><span class="v">${u.supply==="special"?"특별공급":"일반공급"} · ${u.form} (${u.floor}층)</span></div>`
+      +`<div class="kv"><span class="k">임대보증금</span><span class="v">${man(u.deposit)}</span></div>`
+      +`<div class="kv"><span class="k">월 임대료</span><span class="v">${u.rent}만원</span></div>`
+      +`<div class="kv"><span class="k">자기자금 / 대출</span><span class="v">${man(own)} / ${man(loan)}</span></div>`
+      +`<div class="kv"><span class="k">보증보험</span><span class="v">보증금 전액 가입</span></div>`
+      +`<div class="kv"><span class="k">입주지정일</span><span class="v">${u.movein}</span></div>`
+      +`<div class="kv"><span class="k">소액임차인 기준(1억6,500만원↓)</span><span class="v">${small?"보증금 기준 해당":"보증금 기준 초과"}</span></div>`;
+    $("costNote").innerHTML=`<strong>알아둘 비용:</strong> 임대보증금 보증수수료는 임대사업자 75%·임차인 25% 부담이며, 임대료에 포함되지 않아 입주 후 별도로 냅니다. 단지 근저당 등으로 전세자금대출이 제한될 수 있으니 계약 전 은행에 꼭 확인하세요 — 단지 문제 외 사유로 입주 전 계약을 파기하면 위약금 ${PARAMS.penalty}만원이 있습니다. 소액임차인 판정은 실제로는 선순위 담보권 설정일 기준 금액이 적용되므로 위 표시는 단순 비교입니다(서울 최우선변제금 ${comma(PARAMS.smallTenant.priority)}만원). 계약기간 2년, 2년 단위 갱신, 분양전환 우선권 없음.`;
+  }
+
+  function renderAll(){renderElig();renderIncome();renderAsset();renderCost();}
+  buildUnits(); renderAll();
+})();
+</script>
+<script>
+  /* 방문 통계(GoatCounter) — 랜딩 site.json의 analytics.code와 같은 값을 넣으세요. 비어 있으면 동작하지 않습니다. */
+  const GC_CODE = "";
+  if (GC_CODE) { const s=document.createElement("script"); s.async=true; s.dataset.goatcounter=`https://${GC_CODE}.goatcounter.com/count`; s.src="//gc.zgo.at/count.js"; document.body.appendChild(s); }
+</script>
+</body>
+</html>
